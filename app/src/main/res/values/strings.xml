@@ -4,4 +4,24 @@
     <string name="notification_channel_name">Step count</string>
     <string name="notification_title">%1$s steps today</string>
     <string name="notification_text">Goal: %1$s</string>
+
+    <string name="tab_today">Today</string>
+    <string name="tab_history">History</string>
+    <string name="tab_scores">Scores</string>
+
+    <string name="permission_title">Count your steps</string>
+    <string name="permission_body">Pedometer Pal needs access to physical activity to count steps. Your steps stay on this phone.</string>
+    <string name="permission_refused_body">Without physical activity access, Pedometer Pal can\'t count steps.</string>
+    <string name="permission_allow">Allow access</string>
+    <string name="permission_open_settings">Open settings</string>
+
+    <string name="no_sensor_title">This phone can\'t count steps</string>
+    <string name="no_sensor_body">Pedometer Pal needs a built-in step sensor, and this phone doesn\'t have one.</string>
+
+    <string name="battery_title">Keep counting in the background</string>
+    <string name="battery_body">Some phones stop background apps to save battery. Allow Pedometer Pal to ignore battery saving so it doesn\'t miss steps.</string>
+    <string name="battery_allow">Allow</string>
+    <string name="battery_not_now">Not now</string>
+
+    <string name="notifications_off_hint">Notifications are off, so the step count won\'t show in the notification bar.</string>
 </resources>
