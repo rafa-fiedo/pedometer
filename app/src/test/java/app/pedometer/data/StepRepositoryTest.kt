@@ -17,6 +17,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.io.File
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -89,6 +90,22 @@ class StepRepositoryTest {
             CounterStateEntity(id = 0, lastSensorValue = 130, lastBootCount = 1),
             dao.counterState(),
         )
+    }
+
+    @Test
+    fun failedBaselineWriteRollsBackTheSteps() = runTest {
+        repo.recordReading(100, 1, d("2026-11-10"))
+        repo.recordReading(130, 1, d("2026-11-10"))
+        db.openHelper.writableDatabase.execSQL(
+            "CREATE TRIGGER fail_state BEFORE INSERT ON counter_state " +
+                "BEGIN SELECT RAISE(ABORT, 'baseline write failed'); END",
+        )
+
+        assertFails { repo.recordReading(150, 1, d("2026-11-10")) }
+
+        // Had the 20 steps stayed while the baseline did not move, the next reading
+        // would count them a second time.
+        assertEquals(30, steps("2026-11-10"))
     }
 
     @Test

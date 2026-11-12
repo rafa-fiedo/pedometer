@@ -31,7 +31,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -74,7 +73,10 @@ fun PermissionScreen(onGranted: () -> Unit) {
     var mustOpenSettings by rememberSaveable { mutableStateOf(false) }
     // True while a system permission dialog is on screen, so returning from the first dialog
     // does not leave this screen before the second one has been asked.
-    var requesting by remember { mutableStateOf(false) }
+    var requesting by rememberSaveable { mutableStateOf(false) }
+    // Notifications are asked for once per visit to this screen, whichever way activity
+    // access was granted.
+    var askedForNotifications by rememberSaveable { mutableStateOf(false) }
 
     val notificationLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -83,34 +85,39 @@ fun PermissionScreen(onGranted: () -> Unit) {
         requesting = false
         onGranted()
     }
+    // Asks for notifications if that is still needed; otherwise the screen is finished.
+    val continueAfterActivityAccess = {
+        if (needsNotificationPermission(context) && !askedForNotifications) {
+            askedForNotifications = true
+            requesting = true
+            notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            requesting = false
+            onGranted()
+        }
+    }
     val activityLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { granted ->
-        when {
-            granted && needsNotificationPermission(context) ->
-                notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            granted -> {
-                requesting = false
-                onGranted()
-            }
-            else -> {
-                requesting = false
-                refused = true
-                // After a refusal Android stops showing the dialog once it reports no
-                // rationale; from then on only the system settings can grant access.
-                val activity = context.findActivity()
-                mustOpenSettings = activity == null ||
-                    !ActivityCompat.shouldShowRequestPermissionRationale(
-                        activity,
-                        Manifest.permission.ACTIVITY_RECOGNITION,
-                    )
-            }
+        if (granted) {
+            continueAfterActivityAccess()
+        } else {
+            requesting = false
+            refused = true
+            // After a refusal Android stops showing the dialog once it reports no
+            // rationale; from then on only the system settings can grant access.
+            val activity = context.findActivity()
+            mustOpenSettings = activity == null ||
+                !ActivityCompat.shouldShowRequestPermissionRationale(
+                    activity,
+                    Manifest.permission.ACTIVITY_RECOGNITION,
+                )
         }
     }
 
     // Covers access granted from the system settings while this screen was in the background.
     LifecycleResumeEffect(Unit) {
-        if (!requesting && hasActivityPermission(context)) onGranted()
+        if (!requesting && hasActivityPermission(context)) continueAfterActivityAccess()
         onPauseOrDispose { }
     }
 

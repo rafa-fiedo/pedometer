@@ -6,12 +6,19 @@ import android.content.Intent
 import java.time.LocalTime
 import java.time.ZonedDateTime
 
-private val ROLLOVER_TIME: LocalTime = LocalTime.of(23, 58)
+private val ROLLOVER_TIME: LocalTime = LocalTime.of(23, 48)
 
 /**
- * The next time the day-rollover alarm should fire: 23:58 today, or 23:58 tomorrow once that
- * has passed. Firing shortly before midnight lets steps walked late in the day be recorded
- * on the day that is ending.
+ * How long after the trigger Android may deliver the rollover alarm. Ten minutes is the
+ * shortest window Android honours for a non-exact alarm, so delivery falls between 23:48
+ * and 23:58.
+ */
+const val ROLLOVER_WINDOW_MS = 10 * 60 * 1000L
+
+/**
+ * The earliest time the next day-rollover alarm may fire: 23:48 today, or 23:48 tomorrow
+ * once that has passed. Firing shortly before midnight lets steps walked late in the day be
+ * recorded on the day that is ending.
  */
 fun nextRolloverTrigger(now: ZonedDateTime): ZonedDateTime {
     val today = now.with(ROLLOVER_TIME)

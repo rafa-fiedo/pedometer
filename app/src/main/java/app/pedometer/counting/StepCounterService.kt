@@ -185,8 +185,16 @@ class StepCounterService : Service() {
             Intent(this, RolloverReceiver::class.java),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
-        getSystemService(AlarmManager::class.java)
-            .setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger.toInstant().toEpochMilli(), alarm)
+        // A windowed alarm is delivered inside its window. An allow-while-idle alarm would
+        // also fire in deep sleep, but Android may deliver it up to an hour late, which
+        // would push an evening's steps past midnight. A phone in deep sleep is lying
+        // still, so there is nothing to flush then anyway.
+        getSystemService(AlarmManager::class.java).setWindow(
+            AlarmManager.RTC_WAKEUP,
+            trigger.toInstant().toEpochMilli(),
+            ROLLOVER_WINDOW_MS,
+            alarm,
+        )
     }
 
     override fun onDestroy() {

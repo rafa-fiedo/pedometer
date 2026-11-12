@@ -112,11 +112,12 @@ JVM-only types in its API. The first day of the week is passed in by
   - `BootReceiver` starts the service after `BOOT_COMPLETED`.
   - The app also starts the service every time it is opened, which covers
     the case where the system stopped it.
-  - Day rollover: a non-exact alarm shortly before midnight wakes the
-    phone and flushes the sensor, so steps walked before midnight are
-    recorded on the day that is ending. Because the alarm is non-exact, a
-    small number of steps taken in the last minutes of a day can still be
-    recorded on the following day.
+  - Day rollover: a non-exact alarm shortly before midnight (delivered
+    between 23:48 and 23:58) wakes the phone and flushes the sensor, so
+    steps walked before midnight are recorded on the day that is ending.
+    Steps taken after the alarm, in the last minutes of a day, can still
+    be recorded on the following day. A phone in deep sleep receives the
+    alarm late, but it is lying still then and has no steps to flush.
 - **UI (Jetpack Compose, Material 3)**
   - One activity with a bottom navigation bar: Today, History, Scores.
   - One ViewModel per screen, each reading from `StepRepository` and

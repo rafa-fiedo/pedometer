@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import app.pedometer.PedometerApp
@@ -62,6 +63,27 @@ class AppUiTest {
         launch(skipSensorCheck = true).use {
             compose.onNodeWithText("Count your steps").assertIsDisplayed()
             compose.onNodeWithText("Allow access").assertIsDisplayed()
+        }
+    }
+
+    @Test
+    fun accessGrantedInSystemSettingsStillLeadsToTheNotificationRequest() {
+        launch(skipSensorCheck = true).use { scenario ->
+            compose.onNodeWithText("Count your steps").assertIsDisplayed()
+
+            // The user grants access in the system settings and comes back to the app.
+            shadowOf(app).grantPermissions(Manifest.permission.ACTIVITY_RECOGNITION)
+            scenario.moveToState(Lifecycle.State.STARTED)
+            scenario.moveToState(Lifecycle.State.RESUMED)
+            compose.waitForIdle()
+
+            scenario.onActivity { activity ->
+                val request = shadowOf(activity).lastRequestedPermission
+                assertEquals(
+                    listOf(Manifest.permission.POST_NOTIFICATIONS),
+                    request?.requestedPermissions?.toList(),
+                )
+            }
         }
     }
 
