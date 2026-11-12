@@ -38,4 +38,24 @@ class StepRepository(
     suspend fun markBatteryPromptShown() {
         settings.markBatteryPromptShown()
     }
+
+    /** Whether the permanent step count notification (and with it continuous counting) is on. */
+    val showStepCount: Flow<Boolean> = settings.showStepCount
+
+    val goalAlertEnabled: Flow<Boolean> = settings.goalAlertEnabled
+
+    /** The day the goal-reached notification was last sent, or null if never. */
+    val lastGoalAlertDate: Flow<LocalDate?> = settings.lastGoalAlertDate
+
+    suspend fun setShowStepCount(show: Boolean) {
+        settings.setShowStepCount(show)
+    }
+
+    suspend fun setGoalAlertEnabled(enabled: Boolean) {
+        settings.setGoalAlertEnabled(enabled)
+    }
+
+    suspend fun markGoalAlertSent(date: LocalDate) {
+        settings.markGoalAlertSent(date)
+    }
 }

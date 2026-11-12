@@ -1,7 +1,11 @@
 package app.pedometer.data
 
 import android.content.Context
+import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.flow.first
@@ -20,6 +24,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFails
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @RunWith(RobolectricTestRunner::class)
@@ -31,6 +36,7 @@ class StepRepositoryTest {
     private lateinit var db: AppDatabase
     private lateinit var dao: StepDao
     private lateinit var repo: StepRepository
+    private lateinit var dataStore: DataStore<Preferences>
 
     private fun d(iso: String) = LocalDate.parse(iso)
 
@@ -44,7 +50,7 @@ class StepRepositoryTest {
             .allowMainThreadQueries()
             .build()
         dao = db.stepDao()
-        val dataStore = PreferenceDataStoreFactory.create(
+        dataStore = PreferenceDataStoreFactory.create(
             produceFile = { File(tmp.root, "settings.preferences_pb") },
         )
         repo = StepRepository(dao, SettingsStore(dataStore))
@@ -121,6 +127,29 @@ class StepRepositoryTest {
         repo.setGoal(8_000)
         assertEquals(8_000, repo.goal.first())
         assertFailsWith<IllegalArgumentException> { repo.setGoal(100) }
+    }
+
+    @Test
+    fun notificationSwitchesDefaultAndPersist() = runTest {
+        assertTrue(repo.showStepCount.first())
+        assertFalse(repo.goalAlertEnabled.first())
+        repo.setShowStepCount(false)
+        repo.setGoalAlertEnabled(true)
+        assertFalse(repo.showStepCount.first())
+        assertTrue(repo.goalAlertEnabled.first())
+    }
+
+    @Test
+    fun goalAlertDateDefaultsToNullAndPersists() = runTest {
+        assertNull(repo.lastGoalAlertDate.first())
+        repo.markGoalAlertSent(d("2026-11-12"))
+        assertEquals(d("2026-11-12"), repo.lastGoalAlertDate.first())
+    }
+
+    @Test
+    fun unreadableGoalAlertDateCountsAsNeverSent() = runTest {
+        dataStore.edit { it[stringPreferencesKey("last_goal_alert_date")] = "not-a-date" }
+        assertNull(repo.lastGoalAlertDate.first())
     }
 
     @Test
