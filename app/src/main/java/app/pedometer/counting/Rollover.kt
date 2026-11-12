@@ -1,5 +1,7 @@
 package app.pedometer.counting
 
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -23,6 +25,27 @@ const val ROLLOVER_WINDOW_MS = 10 * 60 * 1000L
 fun nextRolloverTrigger(now: ZonedDateTime): ZonedDateTime {
     val today = now.with(ROLLOVER_TIME)
     return if (now.isBefore(today)) today else today.plusDays(1)
+}
+
+/** Schedules (or reschedules) the day-rollover alarm for [RolloverReceiver]. */
+fun scheduleRolloverAlarm(context: Context) {
+    val trigger = nextRolloverTrigger(ZonedDateTime.now())
+    val alarm = PendingIntent.getBroadcast(
+        context,
+        0,
+        Intent(context, RolloverReceiver::class.java),
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+    )
+    // A windowed alarm is delivered inside its window. An allow-while-idle alarm would also
+    // fire in deep sleep, but Android may deliver it up to an hour late, which would push an
+    // evening's steps past midnight. A phone in deep sleep is lying still, so there is
+    // nothing to flush then anyway.
+    context.getSystemService(AlarmManager::class.java).setWindow(
+        AlarmManager.RTC_WAKEUP,
+        trigger.toInstant().toEpochMilli(),
+        ROLLOVER_WINDOW_MS,
+        alarm,
+    )
 }
 
 /** Fired by the rollover alarm; asks the running service to flush the step sensor. */
