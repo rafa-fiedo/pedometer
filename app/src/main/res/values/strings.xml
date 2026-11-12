@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Pedometer Pal</string>
+
+    <string name="notification_channel_name">Step count</string>
+    <string name="notification_title">%1$s steps today</string>
+    <string name="notification_text">Goal: %1$s</string>
 </resources>
