@@ -1,7 +1,6 @@
 package app.pedometer.ui
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -20,7 +19,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -33,12 +31,14 @@ import androidx.navigation.compose.rememberNavController
 import app.pedometer.PedometerApp
 import app.pedometer.R
 import app.pedometer.counting.StepCounterService
+import app.pedometer.ui.history.HistoryScreen
 import app.pedometer.ui.onboarding.BatteryPrompt
 import app.pedometer.ui.onboarding.NoSensorScreen
 import app.pedometer.ui.onboarding.PermissionScreen
 import app.pedometer.ui.onboarding.StartupScreen
 import app.pedometer.ui.onboarding.hasActivityPermission
 import app.pedometer.ui.onboarding.startupScreen
+import app.pedometer.ui.scores.ScoresScreen
 import app.pedometer.ui.today.TodayScreen
 
 private enum class Tab(val route: String, @StringRes val label: Int, val icon: ImageVector) {
@@ -101,17 +101,10 @@ private fun MainTabs() {
             modifier = Modifier.padding(innerPadding),
         ) {
             composable(Tab.TODAY.route) { TodayScreen() }
-            composable(Tab.HISTORY.route) { Placeholder(Tab.HISTORY) }
-            composable(Tab.SCORES.route) { Placeholder(Tab.SCORES) }
+            composable(Tab.HISTORY.route) { HistoryScreen() }
+            composable(Tab.SCORES.route) { ScoresScreen() }
         }
     }
 
     BatteryPrompt(repository)
-}
-
-@Composable
-private fun Placeholder(tab: Tab) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(stringResource(tab.label))
-    }
 }

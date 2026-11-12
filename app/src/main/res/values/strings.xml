@@ -34,5 +34,14 @@
     <string name="goal_save">Save</string>
     <string name="goal_cancel">Cancel</string>
 
+    <string name="history_empty">Your days will appear here</string>
+    <string name="history_goal_reached">Goal reached</string>
+
+    <string name="scores_totals">Totals</string>
+    <string name="scores_records">Records</string>
+    <string name="scores_best_month">Best day this month</string>
+    <string name="scores_best_year">Best day this year</string>
+    <string name="scores_no_record">–</string>
+
     <string name="notifications_off_hint">Notifications are off, so the step count won\'t show in the notification bar.</string>
 </resources>
