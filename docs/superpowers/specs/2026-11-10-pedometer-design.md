@@ -90,10 +90,13 @@ JVM-only types in its API. The first day of the week is passed in by
 ### `:app` (Android)
 
 - **Storage**
-  - Room database with one table, `daily_steps(date TEXT PRIMARY KEY,
-    steps INTEGER NOT NULL)`, date in ISO format (`2026-11-10`).
-  - DataStore preferences: the goal, the accumulator state (last sensor
-    value, last boot count) and whether the battery prompt has been shown.
+  - Room database with two tables: `daily_steps(date TEXT PRIMARY KEY,
+    steps INTEGER NOT NULL)`, date in ISO format (`2026-11-10`), and a
+    single-row `counter_state` holding the accumulator state (last sensor
+    value, last boot count). Each reading updates both in one
+    transaction, so a crash cannot double-count or lose steps.
+  - DataStore preferences: the goal and whether the battery prompt has
+    been shown.
   - `StepRepository` is the only class the UI and the service use to read
     and write this data. It exposes the day list as a `Flow`, so the UI
     updates live while walking.
@@ -134,6 +137,7 @@ JVM-only types in its API. The first day of the week is passed in by
 | `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_HEALTH` | Run the counting service | Granted at install |
 | `RECEIVE_BOOT_COMPLETED` | Restart counting after a reboot | Granted at install |
 | `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | Offer the battery-saving exemption | Granted at install |
+| `WAKE_LOCK` | Keep the phone awake for a few seconds to record steps at the day rollover | Granted at install |
 
 First-run flow:
 
