@@ -1,9 +1,11 @@
 package app.pedometer.ui
 
+import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.toJavaLocalDate
 import java.text.NumberFormat
 import java.time.format.DateTimeFormatter
+import java.time.temporal.WeekFields
 import java.util.Locale
 
 /** A step count with grouping separators, e.g. "6,482". */
@@ -21,6 +23,9 @@ fun formatMonthTitle(date: LocalDate, locale: Locale): String = format(date, "MM
 
 /** "Sat 7 November" */
 fun formatRecordDate(date: LocalDate, locale: Locale): String = format(date, "EEE d MMMM", locale)
+
+/** The day weeks start on in [locale]: Monday in most of Europe, Sunday in the US. */
+fun firstDayOfWeek(locale: Locale): DayOfWeek = WeekFields.of(locale).firstDayOfWeek
 
 private fun format(date: LocalDate, pattern: String, locale: Locale): String =
     DateTimeFormatter.ofPattern(pattern, locale).format(date.toJavaLocalDate())

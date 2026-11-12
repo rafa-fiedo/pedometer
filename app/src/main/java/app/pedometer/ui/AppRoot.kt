@@ -39,6 +39,7 @@ import app.pedometer.ui.onboarding.PermissionScreen
 import app.pedometer.ui.onboarding.StartupScreen
 import app.pedometer.ui.onboarding.hasActivityPermission
 import app.pedometer.ui.onboarding.startupScreen
+import app.pedometer.ui.today.TodayScreen
 
 private enum class Tab(val route: String, @StringRes val label: Int, val icon: ImageVector) {
     TODAY("today", R.string.tab_today, Icons.AutoMirrored.Filled.DirectionsWalk),
@@ -99,7 +100,7 @@ private fun MainTabs() {
             startDestination = Tab.TODAY.route,
             modifier = Modifier.padding(innerPadding),
         ) {
-            composable(Tab.TODAY.route) { Placeholder(Tab.TODAY) }
+            composable(Tab.TODAY.route) { TodayScreen() }
             composable(Tab.HISTORY.route) { Placeholder(Tab.HISTORY) }
             composable(Tab.SCORES.route) { Placeholder(Tab.SCORES) }
         }
