@@ -12,11 +12,13 @@ import androidx.compose.ui.test.performClick
 import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
+import androidx.work.testing.WorkManagerTestInitHelper
 import app.pedometer.PedometerApp
 import app.pedometer.currentLocalDate
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.minus
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -39,6 +41,12 @@ class AppUiTest {
     val compose = createEmptyComposeRule()
 
     private val app: PedometerApp get() = ApplicationProvider.getApplicationContext()
+
+    // On a device WorkManager initialises itself at app start; a JVM test has to do it.
+    @Before
+    fun initWorkManager() {
+        WorkManagerTestInitHelper.initializeTestWorkManager(app)
+    }
 
     private fun launch(skipSensorCheck: Boolean): ActivityScenario<MainActivity> =
         ActivityScenario.launch(

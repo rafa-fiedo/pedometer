@@ -9,20 +9,27 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import app.pedometer.BuildConfig
 import app.pedometer.PedometerApp
 import app.pedometer.counting.StepCounterService
 import app.pedometer.ui.theme.PedometerPalTheme
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
-    private val todaySource get() = (application as PedometerApp).todaySource
+    private val app get() = application as PedometerApp
 
     // While the app is visible, keep "today" correct across midnight and clock changes.
     private val clockReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            todaySource.refresh()
+            app.todaySource.refresh()
         }
     }
+
+    // Listens to the step sensor while the app is on screen, so the count is live even in
+    // periodic mode, where nothing else is listening.
+    private var liveCounting: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,12 +55,20 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        todaySource.refresh()
-        // Restarts counting if the system stopped the service while the app was closed.
-        StepCounterService.start(this)
+        app.todaySource.refresh()
+        // Re-applies the counting mode: restarts the service if the system stopped it, or
+        // makes sure the catch-up job is scheduled.
+        lifecycleScope.launch { app.countingController.apply() }
+        // Started here rather than in onStart because activity access may just have been
+        // granted in a system dialog, which pauses but does not stop the activity.
+        if (liveCounting?.isActive != true && StepCounterService.canCount(this)) {
+            liveCounting = lifecycleScope.launch { app.recorder.recorded.collect { } }
+        }
     }
 
     override fun onStop() {
+        liveCounting?.cancel()
+        liveCounting = null
         unregisterReceiver(clockReceiver)
         super.onStop()
     }

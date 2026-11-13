@@ -3,12 +3,12 @@ package app.pedometer.counting
 import android.app.Notification
 import android.app.NotificationManager
 import android.content.Context
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import app.pedometer.data.AppDatabase
 import app.pedometer.data.SettingsStore
 import app.pedometer.data.StepRepository
+import app.pedometer.testing.InMemoryPreferencesDataStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -18,14 +18,11 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
 import org.junit.After
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
-import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -34,9 +31,6 @@ import kotlin.test.assertTrue
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
 class StepEffectsTest {
-    @get:Rule
-    val tmp = TemporaryFolder()
-
     private val context: Context = ApplicationProvider.getApplicationContext()
     private val notificationManager = context.getSystemService(NotificationManager::class.java)
     private val effectsScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -54,9 +48,7 @@ class StepEffectsTest {
         db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java)
             .allowMainThreadQueries()
             .build()
-        val dataStore = PreferenceDataStoreFactory.create(
-            produceFile = { File(tmp.root, "settings.preferences_pb") },
-        )
+        val dataStore = InMemoryPreferencesDataStore()
         repo = StepRepository(db.stepDao(), SettingsStore(dataStore))
         effects = StepEffects(
             context = context,

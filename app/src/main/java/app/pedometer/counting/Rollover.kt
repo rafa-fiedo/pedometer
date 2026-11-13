@@ -5,6 +5,11 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.util.Log
+import app.pedometer.PedometerApp
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import java.time.LocalTime
 import java.time.ZonedDateTime
 
@@ -48,9 +53,37 @@ fun scheduleRolloverAlarm(context: Context) {
     )
 }
 
-/** Fired by the rollover alarm; asks the running service to flush the step sensor. */
+/**
+ * Fired by the rollover alarm shortly before midnight, so steps walked late in the day are
+ * recorded on the day that is ending.
+ */
 class RolloverReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        val app = context.applicationContext as PedometerApp
+        if (!StepCounterService.canCount(app)) return
+        // Keeps the broadcast (and the alarm's wake lock) alive while the work finishes.
+        val pending = goAsync()
+        app.appScope.launch {
+            try {
+                if (app.repository.showStepCount.first()) {
+                    flushService(app)
+                } else {
+                    app.recorder.recordOnce(ROLLOVER_READ_TIMEOUT_MS)
+                    app.effects.refreshNow()
+                    scheduleRolloverAlarm(app)
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.w(TAG, "Day rollover failed", e)
+            } finally {
+                pending.finish()
+            }
+        }
+    }
+
+    /** Continuous mode: the running service flushes the sensor and reschedules the alarm. */
+    private fun flushService(context: Context) {
         val flush = Intent(context, StepCounterService::class.java)
             .setAction(StepCounterService.ACTION_FLUSH)
         try {
@@ -59,5 +92,12 @@ class RolloverReceiver : BroadcastReceiver() {
             // The service is not running and the app is in the background, so Android
             // refuses the start. Counting resumes the next time the app is opened.
         }
+    }
+
+    private companion object {
+        const val TAG = "RolloverReceiver"
+
+        // Well inside the ten seconds Android gives a broadcast receiver.
+        const val ROLLOVER_READ_TIMEOUT_MS = 5_000L
     }
 }

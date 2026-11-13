@@ -7,6 +7,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
+import app.pedometer.counting.CountingController
 import app.pedometer.counting.StepEffects
 import app.pedometer.counting.StepRecorder
 import app.pedometer.counting.StepSensorReader
@@ -46,6 +47,8 @@ class PedometerApp : Application() {
             onRecorded = effects::requestRefresh,
         )
     }
+
+    val countingController: CountingController by lazy { CountingController(this, repository) }
 
     // Never called on a real device; in JVM tests it stops this app instance's background
     // work when the test ends.

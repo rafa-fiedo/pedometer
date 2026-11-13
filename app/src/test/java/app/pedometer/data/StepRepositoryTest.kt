@@ -1,8 +1,8 @@
 package app.pedometer.data
 
 import android.content.Context
+import app.pedometer.testing.InMemoryPreferencesDataStore
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -13,13 +13,10 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
 import org.junit.After
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 import kotlin.test.assertFailsWith
@@ -30,9 +27,6 @@ import kotlin.test.assertTrue
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
 class StepRepositoryTest {
-    @get:Rule
-    val tmp = TemporaryFolder()
-
     private lateinit var db: AppDatabase
     private lateinit var dao: StepDao
     private lateinit var repo: StepRepository
@@ -50,9 +44,7 @@ class StepRepositoryTest {
             .allowMainThreadQueries()
             .build()
         dao = db.stepDao()
-        dataStore = PreferenceDataStoreFactory.create(
-            produceFile = { File(tmp.root, "settings.preferences_pb") },
-        )
+        dataStore = InMemoryPreferencesDataStore()
         repo = StepRepository(dao, SettingsStore(dataStore))
     }
 

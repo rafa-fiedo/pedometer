@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -40,6 +41,7 @@ import app.pedometer.ui.onboarding.hasActivityPermission
 import app.pedometer.ui.onboarding.startupScreen
 import app.pedometer.ui.scores.ScoresScreen
 import app.pedometer.ui.today.TodayScreen
+import kotlinx.coroutines.launch
 
 private enum class Tab(val route: String, @StringRes val label: Int, val icon: ImageVector) {
     TODAY("today", R.string.tab_today, Icons.AutoMirrored.Filled.DirectionsWalk),
@@ -51,6 +53,8 @@ private enum class Tab(val route: String, @StringRes val label: Int, val icon: I
 @Composable
 fun AppRoot(skipSensorCheck: Boolean) {
     val context = LocalContext.current
+    val app = context.applicationContext as PedometerApp
+    val scope = rememberCoroutineScope()
     val hasSensor = remember { StepCounterService.hasStepSensor(context) }
     var hasPermission by remember { mutableStateOf(hasActivityPermission(context)) }
 
@@ -60,7 +64,7 @@ fun AppRoot(skipSensorCheck: Boolean) {
             StartupScreen.PERMISSION -> PermissionScreen(
                 onGranted = {
                     hasPermission = true
-                    StepCounterService.start(context)
+                    scope.launch { app.countingController.apply() }
                 },
             )
             StartupScreen.MAIN -> MainTabs()

@@ -3,12 +3,12 @@ package app.pedometer.counting
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorManager
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import app.pedometer.data.AppDatabase
 import app.pedometer.data.SettingsStore
 import app.pedometer.data.StepRepository
+import app.pedometer.testing.InMemoryPreferencesDataStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
@@ -22,16 +22,13 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
 import org.junit.After
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowSensor
 import org.robolectric.shadows.ShadowSensorManager
-import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -41,9 +38,6 @@ import kotlin.test.assertTrue
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
 class StepRecorderTest {
-    @get:Rule
-    val tmp = TemporaryFolder()
-
     private val context: Context = ApplicationProvider.getApplicationContext()
     private val sensorManager: SensorManager = context.getSystemService(SensorManager::class.java)
     private lateinit var db: AppDatabase
@@ -62,9 +56,7 @@ class StepRecorderTest {
         db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java)
             .allowMainThreadQueries()
             .build()
-        val dataStore = PreferenceDataStoreFactory.create(
-            produceFile = { File(tmp.root, "settings.preferences_pb") },
-        )
+        val dataStore = InMemoryPreferencesDataStore()
         repo = StepRepository(db.stepDao(), SettingsStore(dataStore))
         shadowOf(sensorManager).addSensor(ShadowSensor.newInstance(Sensor.TYPE_STEP_COUNTER))
         recorder = StepRecorder(
