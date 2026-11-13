@@ -5,6 +5,10 @@
     <string name="notification_title">%1$s steps today</string>
     <string name="notification_text">Goal: %1$s</string>
 
+    <string name="goal_notification_channel_name">Goal reached</string>
+    <string name="goal_notification_title">Goal reached</string>
+    <string name="goal_notification_text">You walked %1$s steps today.</string>
+
     <string name="tab_today">Today</string>
     <string name="tab_history">History</string>
     <string name="tab_scores">Scores</string>
