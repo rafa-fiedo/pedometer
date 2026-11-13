@@ -15,9 +15,12 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import app.pedometer.R
 
-/** A one-line hint shown only while the app's notifications are turned off. */
+/**
+ * A one-line hint shown only while a notification is [wanted] (one of the two switches in
+ * Settings is on) and Android is blocking the app's notifications.
+ */
 @Composable
-fun NotificationsOffHint(modifier: Modifier = Modifier) {
+fun NotificationsOffHint(wanted: Boolean, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     var enabled by remember {
         mutableStateOf(NotificationManagerCompat.from(context).areNotificationsEnabled())
@@ -26,7 +29,7 @@ fun NotificationsOffHint(modifier: Modifier = Modifier) {
         enabled = NotificationManagerCompat.from(context).areNotificationsEnabled()
         onPauseOrDispose { }
     }
-    if (enabled) return
+    if (enabled || !wanted) return
     Text(
         text = stringResource(R.string.notifications_off_hint),
         modifier = modifier,

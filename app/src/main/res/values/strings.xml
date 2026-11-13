@@ -47,5 +47,16 @@
     <string name="scores_best_year">Best day this year</string>
     <string name="scores_no_record">–</string>
 
+    <string name="settings_title">Settings</string>
+    <string name="settings_back">Back</string>
+    <string name="settings_section_goal">Goal</string>
+    <string name="settings_section_notifications">Notifications</string>
+    <string name="settings_daily_goal">Daily goal</string>
+    <string name="settings_show_step_count">Show step count</string>
+    <string name="settings_show_step_count_subtitle">Always-on notification. Counts continuously.</string>
+    <string name="settings_goal_alert">Tell me when I reach my goal</string>
+    <string name="settings_goal_alert_subtitle">One notification a day.</string>
+    <string name="settings_periodic_note">With the step count off, steps are collected about every 15 minutes and whenever you open the app.</string>
+
     <string name="notifications_off_hint">Notifications are off, so the step count won\'t show in the notification bar.</string>
 </resources>

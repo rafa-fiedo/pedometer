@@ -48,7 +48,8 @@ fun hasActivityPermission(context: Context): Boolean =
     ContextCompat.checkSelfPermission(context, Manifest.permission.ACTIVITY_RECOGNITION) ==
         PackageManager.PERMISSION_GRANTED
 
-private fun needsNotificationPermission(context: Context): Boolean =
+/** True on Android 13+ while the app has not been allowed to post notifications. */
+fun needsNotificationPermission(context: Context): Boolean =
     Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
         ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
         PackageManager.PERMISSION_GRANTED

@@ -34,6 +34,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        // Creates the app's effects now, so goal and settings changes refresh the widget and
+        // the goal alert even before any step has been recorded in this process.
+        app.effects
         // Debug builds can skip the sensor check so the screens can be viewed on an emulator.
         val skipSensorCheck = BuildConfig.DEBUG && intent.getBooleanExtra(EXTRA_SKIP_SENSOR_CHECK, false)
         setContent {

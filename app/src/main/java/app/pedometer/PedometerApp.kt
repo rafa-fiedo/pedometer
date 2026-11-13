@@ -1,11 +1,11 @@
 package app.pedometer
 
 import android.app.Application
-import android.content.Context
 import android.provider.Settings
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.preferencesDataStore
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.room.Room
 import app.pedometer.counting.CountingController
 import app.pedometer.counting.StepEffects
@@ -19,12 +19,20 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 
-private val Context.settingsDataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
-
 /** Owns the app-wide singletons; screens, the service and background jobs reach them here. */
 class PedometerApp : Application() {
     /** Lives as long as the process; used for work that must outlast any one screen. */
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    // The same file the app has always used (files/datastore/settings.preferences_pb). It
+    // belongs to this application object rather than to a process-wide singleton, so each
+    // JVM test, which gets its own application, also gets its own settings.
+    private val settingsDataStore: DataStore<Preferences> by lazy {
+        PreferenceDataStoreFactory.create(
+            scope = CoroutineScope(appScope.coroutineContext + Dispatchers.IO),
+            produceFile = { preferencesDataStoreFile("settings") },
+        )
+    }
 
     val repository: StepRepository by lazy {
         val database = Room.databaseBuilder(this, AppDatabase::class.java, "pedometer.db").build()

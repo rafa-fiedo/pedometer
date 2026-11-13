@@ -14,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -36,8 +37,12 @@ import app.pedometer.R
 import app.pedometer.ui.NotificationsOffHint
 
 @Composable
-fun TodayScreen(viewModel: TodayViewModel = viewModel(factory = TodayViewModel.Factory)) {
+fun TodayScreen(
+    onOpenSettings: () -> Unit,
+    viewModel: TodayViewModel = viewModel(factory = TodayViewModel.Factory),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val notificationsWanted by viewModel.notificationsWanted.collectAsStateWithLifecycle()
     val current = state ?: return
     var editingGoal by rememberSaveable { mutableStateOf(false) }
 
@@ -48,12 +53,17 @@ fun TodayScreen(viewModel: TodayViewModel = viewModel(factory = TodayViewModel.F
             .padding(horizontal = 24.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(
-            text = stringResource(R.string.app_name),
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        Spacer(Modifier.height(24.dp))
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = stringResource(R.string.app_name),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.weight(1f),
+            )
+            IconButton(onClick = onOpenSettings) {
+                Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.settings_title))
+            }
+        }
+        Spacer(Modifier.height(12.dp))
 
         Box(modifier = Modifier.size(240.dp), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(
@@ -92,7 +102,7 @@ fun TodayScreen(viewModel: TodayViewModel = viewModel(factory = TodayViewModel.F
             TotalTile(stringResource(R.string.total_this_month), current.monthText, Modifier.weight(1f))
         }
 
-        NotificationsOffHint(Modifier.padding(top = 20.dp))
+        NotificationsOffHint(wanted = notificationsWanted, modifier = Modifier.padding(top = 20.dp))
     }
 
     if (editingGoal) {
