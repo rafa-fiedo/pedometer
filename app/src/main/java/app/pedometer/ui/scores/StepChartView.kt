@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
@@ -41,7 +42,8 @@ const val STEP_CHART_TAG = "step-chart"
 
 /**
  * Bars for a week or month, a thin line for a year, and a dashed goal line. Tapping a day
- * selects it; tapping the selected day again clears it. Future days can't be selected.
+ * selects it and marks it on the chart; tapping it again clears it. Future days can't be
+ * selected.
  */
 @Composable
 fun StepChartView(
@@ -76,9 +78,9 @@ fun StepChartView(
         ) {
             if (chart.bars.isEmpty() || chart.scaleMax <= 0) return@Canvas
             if (chart.range == ChartRange.YEAR) {
-                drawYearLine(chart, colors.primary)
+                drawYearLine(chart, colors.primary, selectedColor = colors.tertiary)
             } else {
-                drawBars(chart, reached = colors.primary, other = colors.surfaceVariant)
+                drawBars(chart, reached = colors.primary, other = colors.surfaceVariant, selectedColor = colors.tertiary)
             }
             drawGoalLine(chart, colors.onSurfaceVariant)
             val label = textMeasurer.measure(chart.goalText, goalStyle)
@@ -95,7 +97,7 @@ fun StepChartView(
 private fun DrawScope.yFor(steps: Int, scaleMax: Int): Float =
     size.height * (1f - steps.toFloat() / scaleMax).coerceIn(0f, 1f)
 
-private fun DrawScope.drawBars(chart: ChartUiState, reached: Color, other: Color) {
+private fun DrawScope.drawBars(chart: ChartUiState, reached: Color, other: Color, selectedColor: Color) {
     val slot = size.width / chart.bars.size
     val barWidth = slot * if (chart.range == ChartRange.WEEK) 0.6f else 0.7f
     val corner = minOf(barWidth / 3f, 6.dp.toPx())
@@ -104,7 +106,11 @@ private fun DrawScope.drawBars(chart: ChartUiState, reached: Color, other: Color
         if (steps <= 0) return@forEachIndexed
         val top = yFor(steps, chart.scaleMax)
         val left = i * slot + (slot - barWidth) / 2f
-        val color = if (bar.reachedGoal) reached else other
+        val color = when {
+            bar.date == chart.selected?.date -> selectedColor
+            bar.reachedGoal -> reached
+            else -> other
+        }
         // Rounded at the top only: a rounded bar with its lower corners squared off.
         drawRoundRect(color, Offset(left, top), Size(barWidth, size.height - top), CornerRadius(corner, corner))
         val square = minOf(corner, (size.height - top) / 2f)
@@ -112,17 +118,26 @@ private fun DrawScope.drawBars(chart: ChartUiState, reached: Color, other: Color
     }
 }
 
-private fun DrawScope.drawYearLine(chart: ChartUiState, color: Color) {
+private fun DrawScope.drawYearLine(chart: ChartUiState, color: Color, selectedColor: Color) {
     val slot = size.width / chart.bars.size
-    val path = Path()
-    var started = false
-    chart.bars.forEachIndexed { i, bar ->
-        val steps = bar.steps ?: return@forEachIndexed
-        val x = (i + 0.5f) * slot
-        val y = yFor(steps, chart.scaleMax)
-        if (started) path.lineTo(x, y) else path.moveTo(x, y).also { started = true }
+    fun point(i: Int, steps: Int) = Offset((i + 0.5f) * slot, yFor(steps, chart.scaleMax))
+    val points = chart.bars.mapIndexedNotNull { i, bar -> bar.steps?.let { point(i, it) } }
+    val stroke = 1.5.dp.toPx()
+    if (points.size == 1) {
+        // A line needs two days; with one, show it as a dot.
+        drawCircle(color, radius = stroke, center = points[0])
+    } else if (points.isNotEmpty()) {
+        val path = Path().apply {
+            moveTo(points[0].x, points[0].y)
+            points.drop(1).forEach { lineTo(it.x, it.y) }
+        }
+        drawPath(path, color, style = Stroke(width = stroke, cap = StrokeCap.Round, join = StrokeJoin.Round))
     }
-    drawPath(path, color, style = Stroke(width = 1.5.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+    val selectedIndex = chart.bars.indexOfFirst { it.date == chart.selected?.date }
+    val selectedSteps = chart.bars.getOrNull(selectedIndex)?.steps
+    if (selectedSteps != null) {
+        drawCircle(selectedColor, radius = 4.dp.toPx(), center = point(selectedIndex, selectedSteps))
+    }
 }
 
 private fun DrawScope.drawGoalLine(chart: ChartUiState, color: Color) {
@@ -141,7 +156,8 @@ private fun DrawScope.drawGoalLine(chart: ChartUiState, color: Color) {
 private fun AxisLabels(chart: ChartUiState, style: TextStyle, modifier: Modifier = Modifier) {
     Layout(
         content = { chart.axisLabels.forEach { Text(text = it.text, style = style, maxLines = 1) } },
-        modifier = modifier.fillMaxWidth(),
+        // Read as part of the chart's one description, not letter by letter.
+        modifier = modifier.fillMaxWidth().clearAndSetSemantics {},
     ) { measurables, constraints ->
         val placeables = measurables.map { it.measure(Constraints()) }
         val width = constraints.maxWidth

@@ -24,13 +24,6 @@ class ScoresViewModel(
     repository: StepRepository,
     todaySource: TodaySource,
 ) : ViewModel() {
-    /** Which chart is shown, how far back each view is, and the selected day. Kept while the app is open. */
-    private data class ChartControls(
-        val range: ChartRange = ChartRange.WEEK,
-        val periodsBack: Map<ChartRange, Int> = emptyMap(),
-        val selected: LocalDate? = null,
-    )
-
     private val controls = MutableStateFlow(ChartControls())
 
     /** Null until the first values have loaded. */
@@ -39,26 +32,17 @@ class ScoresViewModel(
             val locale = Locale.getDefault()
             scoresUiState(
                 days, today, goal, firstDayOfWeek(locale), locale,
-                c.range, c.periodsBack[c.range] ?: 0, c.selected,
+                c.range, c.currentPeriodsBack, c.selected,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
-    fun selectRange(range: ChartRange) = controls.update { it.copy(range = range, selected = null) }
+    fun selectRange(range: ChartRange) = controls.update { it.withRange(range) }
 
-    fun previous() {
-        if (state.value?.chart?.canGoBack == true) move(by = 1)
-    }
+    fun previous() = controls.update { it.back(canGoBack = state.value?.chart?.canGoBack == true) }
 
-    fun next() {
-        if (state.value?.chart?.canGoForward == true) move(by = -1)
-    }
+    fun next() = controls.update { it.forward(canGoForward = state.value?.chart?.canGoForward == true) }
 
-    fun select(date: LocalDate?) = controls.update { it.copy(selected = date) }
-
-    private fun move(by: Int) = controls.update {
-        val back = ((it.periodsBack[it.range] ?: 0) + by).coerceAtLeast(0)
-        it.copy(periodsBack = it.periodsBack + (it.range to back), selected = null)
-    }
+    fun select(date: LocalDate?) = controls.update { it.withSelected(date) }
 
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
