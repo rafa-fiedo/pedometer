@@ -5,6 +5,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.toJavaLocalDate
 import java.text.NumberFormat
 import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
 import java.time.temporal.WeekFields
 import java.util.Locale
 
@@ -23,6 +24,10 @@ fun formatMonthTitle(date: LocalDate, locale: Locale): String = format(date, "MM
 
 /** "Sat 7 November" */
 fun formatRecordDate(date: LocalDate, locale: Locale): String = format(date, "EEE d MMMM", locale)
+
+/** The day's full name, starting with a capital: "Monday". */
+fun dayName(day: DayOfWeek, locale: Locale): String =
+    day.getDisplayName(TextStyle.FULL, locale).replaceFirstChar { it.titlecase(locale) }
 
 /** The day weeks start on in [locale]: Monday in most of Europe, Sunday in the US. */
 fun firstDayOfWeek(locale: Locale): DayOfWeek = WeekFields.of(locale).firstDayOfWeek

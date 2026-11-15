@@ -56,6 +56,19 @@
 
     <string name="settings_title">Settings</string>
     <string name="settings_section_goal">Goal</string>
+    <string name="settings_section_you">You</string>
+    <string name="settings_height">Height</string>
+    <string name="settings_weight">Weight</string>
+    <string name="settings_not_set">Not set</string>
+    <string name="settings_height_value">%1$d cm</string>
+    <string name="settings_weight_value">%1$d kg</string>
+    <string name="settings_height_field">Height in cm</string>
+    <string name="settings_weight_field">Weight in kg</string>
+    <string name="settings_height_error">Enter 100 to 250 cm, or leave it empty</string>
+    <string name="settings_weight_error">Enter 30 to 300 kg, or leave it empty</string>
+    <string name="settings_section_week">Week</string>
+    <string name="settings_week_start">First day of the week</string>
+    <string name="settings_week_phone_default">Phone default (%1$s)</string>
     <string name="settings_section_notifications">Notifications</string>
     <string name="settings_daily_goal">Daily goal</string>
     <string name="settings_show_step_count">Show step count</string>
