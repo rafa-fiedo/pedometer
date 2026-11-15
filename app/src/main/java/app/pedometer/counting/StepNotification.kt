@@ -34,7 +34,7 @@ object StepNotification {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
         return NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_walk)
+            .setSmallIcon(R.drawable.ic_footprints)
             .setContentTitle(context.getString(R.string.notification_title, formatSteps(steps, locale)))
             .setContentText(context.getString(R.string.notification_text, formatSteps(goal, locale)))
             .setContentIntent(openApp)

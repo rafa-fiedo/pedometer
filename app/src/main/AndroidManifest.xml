@@ -54,13 +54,46 @@
         <receiver
             android:name=".widget.PedometerWidgetReceiver"
             android:exported="true"
-            android:label="@string/widget_name">
+            android:label="@string/widget_name_2x1">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/pedometer_widget_info" />
+        </receiver>
+        <receiver
+            android:name=".widget.PedometerWidget1x1Receiver"
+            android:exported="true"
+            android:label="@string/widget_name_1x1">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/pedometer_widget_1x1" />
+        </receiver>
+        <receiver
+            android:name=".widget.PedometerWidget3x1Receiver"
+            android:exported="true"
+            android:label="@string/widget_name_3x1">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/pedometer_widget_3x1" />
+        </receiver>
+        <receiver
+            android:name=".widget.PedometerWidget4x1Receiver"
+            android:exported="true"
+            android:label="@string/widget_name_4x1">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/pedometer_widget_4x1" />
         </receiver>
     </application>
 

@@ -3,6 +3,7 @@ package app.pedometer.counting
 import android.content.Context
 import android.content.Intent
 import androidx.test.core.app.ApplicationProvider
+import app.pedometer.R
 import app.pedometer.ui.MainActivity
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -30,5 +31,15 @@ class StepNotificationTest {
         assertEquals(Intent.ACTION_MAIN, intent.action)
         assertTrue(intent.hasCategory(Intent.CATEGORY_LAUNCHER))
         assertEquals(MainActivity::class.java.name, intent.component?.className)
+    }
+
+    @Test
+    fun bothNotificationsShowTheFootprintsIcon() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        StepNotification.ensureChannel(context)
+        GoalNotification.ensureChannel(context)
+
+        assertEquals(R.drawable.ic_footprints, StepNotification.build(context, steps = 6_482, goal = 10_000).smallIcon.resId)
+        assertEquals(R.drawable.ic_footprints, GoalNotification.build(context, goal = 10_000).smallIcon.resId)
     }
 }

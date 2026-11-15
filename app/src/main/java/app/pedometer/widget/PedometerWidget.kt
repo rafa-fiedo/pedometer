@@ -82,7 +82,24 @@ class PedometerWidget : GlanceAppWidget() {
     }
 }
 
+/**
+ * One receiver per entry in the widget picker, each starting at its own width (see the
+ * matching `xml/pedometer_widget_*` file). All draw the same widget and can be resized. The
+ * original receiver is the 2 x 1 entry, so widgets already on home screens keep working.
+ */
 class PedometerWidgetReceiver : GlanceAppWidgetReceiver() {
+    override val glanceAppWidget: GlanceAppWidget = PedometerWidget()
+}
+
+class PedometerWidget1x1Receiver : GlanceAppWidgetReceiver() {
+    override val glanceAppWidget: GlanceAppWidget = PedometerWidget()
+}
+
+class PedometerWidget3x1Receiver : GlanceAppWidgetReceiver() {
+    override val glanceAppWidget: GlanceAppWidget = PedometerWidget()
+}
+
+class PedometerWidget4x1Receiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = PedometerWidget()
 }
 
@@ -140,7 +157,7 @@ fun WidgetContent(state: WidgetState, width: WidgetWidth) {
 @Composable
 private fun WalkIcon(size: Int) {
     Image(
-        provider = ImageProvider(R.drawable.ic_walk),
+        provider = ImageProvider(R.drawable.ic_footprints),
         contentDescription = null,
         modifier = GlanceModifier.size(size.dp),
         colorFilter = ColorFilter.tint(GlanceTheme.colors.primary),

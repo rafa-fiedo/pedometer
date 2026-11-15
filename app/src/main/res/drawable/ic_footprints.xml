@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The app icon's two footprints, as a small single-colour icon for the notifications and
+     the widget. Same shapes as ic_launcher_foreground, scaled into a 24 x 24 box. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <group
+        android:scaleX="0.34"
+        android:scaleY="0.34"
+        android:translateX="-5.34"
+        android:translateY="-6.36">
+        <!-- Left foot: the right-foot shape mirrored. -->
+        <group android:translateX="30" android:translateY="50">
+            <group android:rotation="-12">
+                <group android:scaleX="-1">
+                    <group android:translateX="-22">
+                        <group android:scaleX="0.5" android:scaleY="0.5">
+                            <path
+                                android:fillColor="#FFFFFFFF"
+                                android:pathData="M12,27C16,21 30,21 35,30C39,38 34,48 30,56C27,63 22,69 16,68C10,67 9,59 11,51C13,44 8,34 12,27Z M8.6,14a5.4,5.4 0,1 0,10.8 0a5.4,5.4 0,1 0,-10.8 0Z M19.7,10a3.8,3.8 0,1 0,7.6 0a3.8,3.8 0,1 0,-7.6 0Z M27.7,12.5a3.3,3.3 0,1 0,6.6 0a3.3,3.3 0,1 0,-6.6 0Z M33.7,18a2.8,2.8 0,1 0,5.6 0a2.8,2.8 0,1 0,-5.6 0Z M37.2,25a2.3,2.3 0,1 0,4.6 0a2.3,2.3 0,1 0,-4.6 0Z" />
+                        </group>
+                    </group>
+                </group>
+            </group>
+        </group>
+        <!-- Right foot. -->
+        <group android:translateX="56" android:translateY="22">
+            <group android:rotation="12">
+                <group android:scaleX="0.5" android:scaleY="0.5">
+                    <path
+                        android:fillColor="#FFFFFFFF"
+                        android:pathData="M12,27C16,21 30,21 35,30C39,38 34,48 30,56C27,63 22,69 16,68C10,67 9,59 11,51C13,44 8,34 12,27Z M8.6,14a5.4,5.4 0,1 0,10.8 0a5.4,5.4 0,1 0,-10.8 0Z M19.7,10a3.8,3.8 0,1 0,7.6 0a3.8,3.8 0,1 0,-7.6 0Z M27.7,12.5a3.3,3.3 0,1 0,6.6 0a3.3,3.3 0,1 0,-6.6 0Z M33.7,18a2.8,2.8 0,1 0,5.6 0a2.8,2.8 0,1 0,-5.6 0Z M37.2,25a2.3,2.3 0,1 0,4.6 0a2.3,2.3 0,1 0,-4.6 0Z" />
+                </group>
+            </group>
+        </group>
+    </group>
+</vector>
