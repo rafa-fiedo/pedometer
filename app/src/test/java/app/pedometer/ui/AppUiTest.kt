@@ -107,14 +107,16 @@ class AppUiTest {
                 compose.onAllNodesWithText("Keep counting in the background").fetchSemanticsNodes().isEmpty()
             }
 
-            // The Today screen, gear included, appears once its data has loaded.
-            compose.waitUntil(timeoutMillis = 10_000) {
-                compose.onAllNodesWithContentDescription("Settings").fetchSemanticsNodes().isNotEmpty()
-            }
-            compose.onNodeWithContentDescription("Settings").performClick()
+            // Settings is the fourth tab; the Today screen no longer has a gear for it.
+            waitForText("of 10,000 steps")
+            assertEquals(0, compose.onAllNodesWithContentDescription("Settings").fetchSemanticsNodes().size)
+            compose.onNodeWithText("Settings").performClick()
             waitForText("Daily goal")
             compose.onNodeWithText("10,000 steps").assertIsDisplayed()
             compose.onNodeWithText("Tell me when I reach my goal").assertIsDisplayed()
+            // The tabs stay visible on the Settings screen, and it has no back arrow.
+            compose.onNodeWithText("Today").assertIsDisplayed()
+            assertEquals(0, compose.onAllNodesWithContentDescription("Back").fetchSemanticsNodes().size)
 
             compose.onNodeWithText("Show step count").performClick()
             waitForText(

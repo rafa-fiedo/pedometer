@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -44,12 +45,11 @@ import app.pedometer.ui.settings.SettingsScreen
 import app.pedometer.ui.today.TodayScreen
 import kotlinx.coroutines.launch
 
-private const val SETTINGS_ROUTE = "settings"
-
 private enum class Tab(val route: String, @StringRes val label: Int, val icon: ImageVector) {
     TODAY("today", R.string.tab_today, Icons.AutoMirrored.Filled.DirectionsWalk),
     HISTORY("history", R.string.tab_history, Icons.Filled.CalendarMonth),
     SCORES("scores", R.string.tab_scores, Icons.Filled.EmojiEvents),
+    SETTINGS("settings", R.string.tab_settings, Icons.Filled.Settings),
 }
 
 /** Chooses between the no-sensor message, the permission screen and the main tabs. */
@@ -84,8 +84,7 @@ private fun MainTabs() {
 
     Scaffold(
         bottomBar = {
-            // Settings is a full screen of its own, without the tabs.
-            if (currentRoute != SETTINGS_ROUTE) NavigationBar {
+            NavigationBar {
                 Tab.entries.forEach { tab ->
                     NavigationBarItem(
                         selected = currentRoute == tab.route,
@@ -108,12 +107,10 @@ private fun MainTabs() {
             startDestination = Tab.TODAY.route,
             modifier = Modifier.padding(innerPadding),
         ) {
-            composable(Tab.TODAY.route) {
-                TodayScreen(onOpenSettings = { navController.navigate(SETTINGS_ROUTE) { launchSingleTop = true } })
-            }
-            composable(SETTINGS_ROUTE) { SettingsScreen(onBack = { navController.popBackStack() }) }
+            composable(Tab.TODAY.route) { TodayScreen() }
             composable(Tab.HISTORY.route) { HistoryScreen() }
             composable(Tab.SCORES.route) { ScoresScreen() }
+            composable(Tab.SETTINGS.route) { SettingsScreen() }
         }
     }
 
