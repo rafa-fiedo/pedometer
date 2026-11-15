@@ -55,10 +55,10 @@ class StepEffects(
                 delay(REFRESH_INTERVAL_MS)
             }
         }
-        // The widget shows the goal, and lowering the goal or switching the alert on can
-        // make the alert due, so both need a refresh without any new steps.
+        // The widget shows the goal and the week total, and lowering the goal or switching the
+        // alert on can make the alert due, so these settings need a refresh without new steps.
         scope.launch {
-            combine(repository.goal, repository.goalAlertEnabled) { goal, enabled -> goal to enabled }
+            combine(repository.goal, repository.goalAlertEnabled, repository.weekStart, ::Triple)
                 .distinctUntilChanged()
                 .drop(1)
                 .collect { requestRefresh() }

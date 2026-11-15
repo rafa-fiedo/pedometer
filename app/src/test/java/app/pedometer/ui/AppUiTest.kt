@@ -14,7 +14,12 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.testing.WorkManagerTestInitHelper
 import app.pedometer.PedometerApp
+import app.pedometer.core.ChartRange
+import app.pedometer.core.StepChart
+import app.pedometer.core.WeekStart
 import app.pedometer.currentLocalDate
+import app.pedometer.ui.scores.formatPeriodLabel
+import kotlinx.datetime.DayOfWeek
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.DateTimeUnit
@@ -94,6 +99,26 @@ class AppUiTest {
                     request?.requestedPermissions?.toList(),
                 )
             }
+        }
+    }
+
+    @Test
+    fun chosenWeekStartShapesTheScoresWeek() {
+        shadowOf(app).grantPermissions(Manifest.permission.ACTIVITY_RECOGNITION)
+        // The test locale (en-US) starts weeks on Sunday, so Monday differs from the default.
+        runBlocking { app.repository.setWeekStart(WeekStart.MONDAY) }
+        val today = currentLocalDate()
+
+        launch(skipSensorCheck = true).use {
+            waitForText("Keep counting in the background")
+            compose.onNodeWithText("Not now").performClick()
+            compose.onNodeWithText("Scores").performClick()
+            waitForText(
+                formatPeriodLabel(
+                    StepChart.periodContaining(ChartRange.WEEK, today, DayOfWeek.MONDAY),
+                    Locale.getDefault(),
+                ),
+            )
         }
     }
 

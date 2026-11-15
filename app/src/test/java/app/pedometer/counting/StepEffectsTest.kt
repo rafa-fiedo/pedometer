@@ -15,6 +15,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import app.pedometer.core.WeekStart
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.flow.first
@@ -109,6 +110,16 @@ class StepEffectsTest {
         shadowOf(notificationManager).setNotificationsEnabled(true)
         effects.refreshNow()
         assertEquals(1, notifications().size)
+    }
+
+    @Test
+    fun weekStartChangeRedrawsTheWidget() = runBlocking {
+        // Let the settings observer take its first value before changing anything.
+        delay(300)
+        val before = widgetRefreshes.get()
+        repo.setWeekStart(WeekStart.SUNDAY)
+
+        withTimeout(5_000) { while (widgetRefreshes.get() == before) delay(20) }
     }
 
     @Test
