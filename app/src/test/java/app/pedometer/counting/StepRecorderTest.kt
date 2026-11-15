@@ -98,6 +98,11 @@ class StepRecorderTest {
         assertFalse(recorder.recordOnce(timeoutMs = 300))
         assertEquals(0, steps("2026-11-12"))
         assertTrue(shadowOf(sensorManager).listeners.isEmpty())
+
+        // A quiet run leaves nothing behind: the next run still gets the next reading.
+        val next = async(start = CoroutineStart.UNDISPATCHED) { recorder.recordOnce() }
+        emit(100)
+        assertTrue(next.await())
     }
 
     @Test

@@ -1,9 +1,13 @@
 package app.pedometer.counting
 
 import android.app.NotificationManager
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.util.Log
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import app.pedometer.core.GoalAlert
 import app.pedometer.currentLocalDate
 import app.pedometer.data.StepRepository
@@ -59,6 +63,17 @@ class StepEffects(
                 .drop(1)
                 .collect { requestRefresh() }
         }
+        // The widget reads the date when it draws, so a new day needs a redraw even when no
+        // steps arrive; otherwise it would show yesterday's count until the first step.
+        val clockFilter = IntentFilter().apply {
+            addAction(Intent.ACTION_DATE_CHANGED)
+            addAction(Intent.ACTION_TIME_CHANGED)
+            addAction(Intent.ACTION_TIMEZONE_CHANGED)
+        }
+        val clockReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) = requestRefresh()
+        }
+        ContextCompat.registerReceiver(context, clockReceiver, clockFilter, ContextCompat.RECEIVER_NOT_EXPORTED)
     }
 
     /** Asks for a refresh soon. Cheap, safe from any thread, and throttled. */

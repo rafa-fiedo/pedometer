@@ -3,6 +3,8 @@ package app.pedometer.counting
 import android.app.Notification
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
+import android.os.Looper
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import app.pedometer.data.AppDatabase
@@ -13,6 +15,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
@@ -105,6 +109,14 @@ class StepEffectsTest {
         shadowOf(notificationManager).setNotificationsEnabled(true)
         effects.refreshNow()
         assertEquals(1, notifications().size)
+    }
+
+    @Test
+    fun aNewDayRedrawsTheWidgetWithoutNewSteps() = runBlocking {
+        context.sendBroadcast(Intent(Intent.ACTION_DATE_CHANGED))
+        shadowOf(Looper.getMainLooper()).idle()
+
+        withTimeout(5_000) { while (widgetRefreshes.get() == 0) delay(20) }
     }
 
     @Test

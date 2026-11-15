@@ -52,7 +52,9 @@ class CountingController(
                 StepCounterService.start(context)
             }
             CountingMode.PERIODIC -> {
-                stopService()
+                // No stopService here: a running service sees the setting and stops itself.
+                // Stopping it from outside could catch it before it reached the foreground,
+                // which crashes the app.
                 workManager.enqueueUniquePeriodicWork(
                     CATCH_UP_WORK,
                     // KEEP: re-applying must not restart the 15-minute interval each time.

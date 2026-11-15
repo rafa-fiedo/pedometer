@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -105,6 +106,14 @@ class StepCounterService : Service() {
         scope.launch { app.recorder.recorded.collect { } }
 
         val repository = app.repository
+        // Stops when the step count is switched off in Settings, or straight away when this
+        // start was already out of date. Stopping itself is safe at any moment because the
+        // service is in the foreground by now; being stopped from outside before reaching
+        // the foreground would crash the app.
+        scope.launch {
+            repository.showStepCount.first { show -> !show }
+            stopSelf()
+        }
         scope.launch {
             combine(repository.days, repository.goal, clockChanges) { days, goal, _ ->
                 val today = currentLocalDate()

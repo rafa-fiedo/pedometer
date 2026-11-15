@@ -2,6 +2,7 @@ package app.pedometer.widget
 
 import androidx.glance.appwidget.testing.unit.GlanceAppWidgetUnitTest
 import androidx.glance.appwidget.testing.unit.runGlanceAppWidgetUnitTest
+import androidx.glance.testing.unit.hasTestTag
 import androidx.glance.testing.unit.hasText
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Test
@@ -32,6 +33,14 @@ class WidgetContentTest {
         onNode(hasText("6,482")).assertExists()
         onNode(hasText("of 10,000")).assertExists()
         onNode(hasText("this week")).assertDoesNotExist()
+        onNode(hasTestTag(PROGRESS_TAG)).assertDoesNotExist()
+    }
+
+    @Test
+    fun threeCellsAddTheProgressBar() = widget(WidgetWidth.THREE) {
+        onNode(hasText("of 10,000")).assertExists()
+        onNode(hasTestTag(PROGRESS_TAG)).assertExists()
+        onNode(hasText("this week")).assertDoesNotExist()
     }
 
     @Test
@@ -40,5 +49,6 @@ class WidgetContentTest {
         onNode(hasText("of 10,000")).assertExists()
         onNode(hasText("17,686")).assertExists()
         onNode(hasText("this week")).assertExists()
+        onNode(hasTestTag(PROGRESS_TAG)).assertExists()
     }
 }

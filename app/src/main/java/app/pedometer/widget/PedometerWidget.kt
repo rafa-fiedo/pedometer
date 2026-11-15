@@ -34,6 +34,8 @@ import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
 import androidx.glance.layout.width
+import androidx.glance.semantics.semantics
+import androidx.glance.semantics.testTag
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
@@ -44,6 +46,9 @@ import app.pedometer.ui.appLaunchIntent
 import app.pedometer.ui.firstDayOfWeek
 import kotlinx.coroutines.flow.first
 import java.util.Locale
+
+/** Marks the progress bar, so tests can tell the three-cell layout from the two-cell one. */
+const val PROGRESS_TAG = "progress"
 
 /** The home-screen widget: one row tall, 1 to 4 cells wide, showing more as it widens. */
 class PedometerWidget : GlanceAppWidget() {
@@ -115,7 +120,7 @@ fun WidgetContent(state: WidgetState, width: WidgetWidth) {
             Spacer(GlanceModifier.width(12.dp))
             LinearProgressIndicator(
                 progress = state.progress,
-                modifier = GlanceModifier.defaultWeight().height(6.dp),
+                modifier = GlanceModifier.defaultWeight().height(6.dp).semantics { testTag = PROGRESS_TAG },
                 color = GlanceTheme.colors.primary,
                 backgroundColor = GlanceTheme.colors.surfaceVariant,
             )
