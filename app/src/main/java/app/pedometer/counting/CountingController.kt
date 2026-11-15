@@ -1,7 +1,6 @@
 package app.pedometer.counting
 
 import android.content.Context
-import android.content.Intent
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
@@ -44,7 +43,7 @@ class CountingController(
         val workManager = WorkManager.getInstance(context)
         when (mode) {
             CountingMode.NONE -> {
-                stopService()
+                StepCounterService.requestStop(context)
                 cancelCatchUp(workManager)
             }
             CountingMode.CONTINUOUS -> {
@@ -52,9 +51,7 @@ class CountingController(
                 StepCounterService.start(context)
             }
             CountingMode.PERIODIC -> {
-                // No stopService here: a running service sees the setting and stops itself.
-                // Stopping it from outside could catch it before it reached the foreground,
-                // which crashes the app.
+                StepCounterService.requestStop(context)
                 workManager.enqueueUniquePeriodicWork(
                     CATCH_UP_WORK,
                     // KEEP: re-applying must not restart the 15-minute interval each time.
@@ -72,10 +69,6 @@ class CountingController(
                 scheduleRolloverAlarm(context)
             }
         }
-    }
-
-    private fun stopService() {
-        context.stopService(Intent(context, StepCounterService::class.java))
     }
 
     private fun cancelCatchUp(workManager: WorkManager) {

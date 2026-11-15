@@ -29,7 +29,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -62,6 +61,13 @@ class StepCounterService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // Never enters the foreground: it ends a running service, or at once ends a service
+        // created only to receive it. Android delivers start requests in order, so a stop
+        // always arrives after any start that was still under way.
+        if (intent?.action == ACTION_STOP) {
+            stopSelf()
+            return START_NOT_STICKY
+        }
         if (!canCount(this) || !enterForeground()) {
             stopSelf()
             return START_NOT_STICKY
@@ -106,14 +112,6 @@ class StepCounterService : Service() {
         scope.launch { app.recorder.recorded.collect { } }
 
         val repository = app.repository
-        // Stops when the step count is switched off in Settings, or straight away when this
-        // start was already out of date. Stopping itself is safe at any moment because the
-        // service is in the foreground by now; being stopped from outside before reaching
-        // the foreground would crash the app.
-        scope.launch {
-            repository.showStepCount.first { show -> !show }
-            stopSelf()
-        }
         scope.launch {
             combine(repository.days, repository.goal, clockChanges) { days, goal, _ ->
                 val today = currentLocalDate()
@@ -164,6 +162,7 @@ class StepCounterService : Service() {
 
     companion object {
         const val ACTION_FLUSH = "app.pedometer.action.FLUSH"
+        const val ACTION_STOP = "app.pedometer.action.STOP"
 
         private const val TAG = "StepCounterService"
         private const val NOTIFICATION_INTERVAL_MS = 5_000L
@@ -178,6 +177,20 @@ class StepCounterService : Service() {
             hasStepSensor(context) &&
                 ContextCompat.checkSelfPermission(context, Manifest.permission.ACTIVITY_RECOGNITION) ==
                 PackageManager.PERMISSION_GRANTED
+
+        /**
+         * Asks the service to stop itself. Used instead of stopService, which could catch a
+         * service that has just been started before it reached the foreground and crash the
+         * app.
+         */
+        fun requestStop(context: Context) {
+            try {
+                context.startService(Intent(context, StepCounterService::class.java).setAction(ACTION_STOP))
+            } catch (e: IllegalStateException) {
+                // Refused only while the app is in the background with no service running,
+                // so there is nothing to stop.
+            }
+        }
 
         /** Starts counting if possible; safe to call repeatedly. */
         fun start(context: Context) {

@@ -54,6 +54,11 @@ class CountingModeSwitchTest {
         assertTrue(work("step-catch-up").single().let(::isActive))
         assertEquals(1, work("step-catch-up-now").size)
         assertTrue(alarms.scheduledAlarms.isNotEmpty())
+        // A running step count service is asked to stop itself; nothing is started in the
+        // foreground.
+        val sent = shadowOf(app).nextStartedService
+        assertEquals(StepCounterService::class.java.name, sent?.component?.className)
+        assertEquals(StepCounterService.ACTION_STOP, sent?.action)
         assertNull(startedServiceClass())
     }
 
@@ -81,13 +86,15 @@ class CountingModeSwitchTest {
     }
 
     @Test
-    fun withoutActivityAccessNothingIsStarted() = runBlocking {
+    fun withoutActivityAccessNothingCounts() = runBlocking {
         shadowOf(app).denyPermissions(Manifest.permission.ACTIVITY_RECOGNITION)
-        app.repository.setShowStepCount(false)
+        app.repository.setShowStepCount(true)
         app.countingController.apply()
 
         assertTrue(work("step-catch-up").none(::isActive))
         assertTrue(alarms.scheduledAlarms.isEmpty())
+        // The only thing sent is a request for any running service to stop itself.
+        assertEquals(StepCounterService.ACTION_STOP, shadowOf(app).nextStartedService?.action)
         assertNull(startedServiceClass())
     }
 
