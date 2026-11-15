@@ -30,7 +30,8 @@ object Walking {
     private const val KCAL_PER_KG_PER_KM = 0.5
 
     fun estimate(steps: Int, body: BodySize): WalkEstimate {
-        val km = steps * body.heightCm * STEP_LENGTH_PER_HEIGHT / 100_000
+        // In Double from the start: steps × height in whole numbers overflows on a big year total.
+        val km = steps.toDouble() * body.heightCm * STEP_LENGTH_PER_HEIGHT / 100_000
         // Calories are never negative, so rounding to nearest is rounding half up.
         val kcal = (KCAL_PER_KG_PER_KM * body.weightKg * km).roundToInt()
         return WalkEstimate(km, kcal)

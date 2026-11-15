@@ -23,6 +23,14 @@ class WalkingTest {
     }
 
     @Test
+    fun hugeTotalsDoNotOverflow() {
+        // A heavy walker's year at the tallest allowed height.
+        val walk = Walking.estimate(15_000_000, BodySize(250, 72))
+        assertEquals(15_562.5, walk.km, 0.01)
+        assertEquals(560_250, walk.kcal)
+    }
+
+    @Test
     fun noStepsNoCalories() = assertEquals(WalkEstimate(0.0, 0), Walking.estimate(0, body))
 
     @Test
