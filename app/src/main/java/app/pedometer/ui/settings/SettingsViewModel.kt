@@ -7,7 +7,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import app.pedometer.PedometerApp
+import app.pedometer.core.BodySize
 import app.pedometer.core.Goal
+import app.pedometer.core.WeekStart
 import app.pedometer.counting.CountingController
 import app.pedometer.data.StepRepository
 import kotlinx.coroutines.flow.SharingStarted
@@ -23,8 +25,11 @@ class SettingsViewModel(
 ) : ViewModel() {
     /** Null until the first values have loaded. */
     val state: StateFlow<SettingsUiState?> =
-        combine(repository.goal, repository.showStepCount, repository.goalAlertEnabled) { goal, show, alert ->
-            settingsUiState(goal, show, alert, Locale.getDefault())
+        combine(
+            combine(repository.goal, repository.showStepCount, repository.goalAlertEnabled, ::Triple),
+            combine(repository.heightCm, repository.weightKg, repository.weekStart, ::Triple),
+        ) { (goal, show, alert), (height, weight, weekStart) ->
+            settingsUiState(goal, show, alert, height, weight, weekStart, Locale.getDefault())
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     fun setGoal(goal: Int) {
@@ -42,6 +47,22 @@ class SettingsViewModel(
 
     fun setGoalAlertEnabled(enabled: Boolean) {
         viewModelScope.launch { repository.setGoalAlertEnabled(enabled) }
+    }
+
+    /** Null clears the height; values outside the allowed range are ignored. */
+    fun setHeightCm(value: Int?) {
+        if (value != null && value !in BodySize.HEIGHT_RANGE) return
+        viewModelScope.launch { repository.setHeightCm(value) }
+    }
+
+    /** Null clears the weight; values outside the allowed range are ignored. */
+    fun setWeightKg(value: Int?) {
+        if (value != null && value !in BodySize.WEIGHT_RANGE) return
+        viewModelScope.launch { repository.setWeightKg(value) }
+    }
+
+    fun setWeekStart(value: WeekStart) {
+        viewModelScope.launch { repository.setWeekStart(value) }
     }
 
     companion object {

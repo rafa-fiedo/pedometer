@@ -67,12 +67,14 @@ class PedometerWidget : GlanceAppWidget() {
         // Read up front, so the first frame already shows real numbers.
         val initialDays = repository.days.first()
         val initialGoal = repository.goal.first()
+        val initialWeekStart = repository.weekStart.first()
         provideContent {
             // Collected, so new steps and goal changes redraw the widget while it is updating.
             val days by repository.days.collectAsState(initialDays)
             val goal by repository.goal.collectAsState(initialGoal)
+            val weekStart by repository.weekStart.collectAsState(initialWeekStart)
             val locale = Locale.getDefault()
-            val state = widgetState(days, goal, currentLocalDate(), firstDayOfWeek(locale), locale)
+            val state = widgetState(days, goal, currentLocalDate(), weekStart.resolve(firstDayOfWeek(locale)), locale)
             GlanceTheme {
                 WidgetContent(state, widgetWidth(LocalSize.current.width.value))
             }

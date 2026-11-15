@@ -1,8 +1,10 @@
 package app.pedometer.ui.scores
 
+import app.pedometer.core.BodySize
 import app.pedometer.core.ChartData
 import app.pedometer.core.ChartPeriod
 import app.pedometer.core.ChartRange
+import app.pedometer.core.Walking
 import app.pedometer.ui.formatMonthTitle
 import app.pedometer.ui.formatSteps
 import kotlinx.datetime.LocalDate
@@ -16,7 +18,13 @@ data class ChartBar(val date: LocalDate, val steps: Int?, val reachedGoal: Boole
 /** A label under the chart, centred on the bar at [index]. */
 data class AxisLabel(val index: Int, val text: String)
 
-data class SelectedDay(val date: LocalDate, val dateText: String, val stepsText: String)
+data class SelectedDay(
+    val date: LocalDate,
+    val dateText: String,
+    val stepsText: String,
+    /** Null until both height and weight are set. */
+    val kcalText: String?,
+)
 
 data class ChartUiState(
     val range: ChartRange,
@@ -28,13 +36,15 @@ data class ChartUiState(
     val scaleMax: Int,
     val totalText: String,
     val averageText: String,
+    /** Walking calories for the whole period; null until both height and weight are set. */
+    val kcalText: String?,
     /** Null when no day is selected, or the selected day is in the future or another period. */
     val selected: SelectedDay?,
     val canGoBack: Boolean,
     val canGoForward: Boolean,
 )
 
-fun chartUiState(data: ChartData, selected: LocalDate?, locale: Locale): ChartUiState {
+fun chartUiState(data: ChartData, selected: LocalDate?, locale: Locale, body: BodySize?): ChartUiState {
     val bars = data.days.map { day ->
         val steps = day.steps
         ChartBar(day.date, steps, reachedGoal = steps != null && steps >= data.goal)
@@ -50,8 +60,15 @@ fun chartUiState(data: ChartData, selected: LocalDate?, locale: Locale): ChartUi
         scaleMax = data.scaleMax,
         totalText = formatSteps(data.total, locale),
         averageText = formatSteps(data.averagePerDay, locale),
+        kcalText = body?.let { formatSteps(Walking.estimate(data.total, it).kcal, locale) },
         selected = selectedBar?.let {
-            SelectedDay(it.date, format(it.date, "EEE d MMM", locale), formatSteps(it.steps ?: 0, locale))
+            val steps = it.steps ?: 0
+            SelectedDay(
+                it.date,
+                format(it.date, "EEE d MMM", locale),
+                formatSteps(steps, locale),
+                kcalText = body?.let { size -> formatSteps(Walking.estimate(steps, size).kcal, locale) },
+            )
         },
         canGoBack = data.canGoBack,
         canGoForward = data.canGoForward,

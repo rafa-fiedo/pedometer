@@ -1,12 +1,18 @@
 package app.pedometer.ui.today
 
+import app.pedometer.core.BodySize
 import app.pedometer.core.DayCount
 import app.pedometer.core.StepStats
+import app.pedometer.core.Walking
+import app.pedometer.ui.formatKm
 import app.pedometer.ui.formatLongDate
 import app.pedometer.ui.formatSteps
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import java.util.Locale
+
+/** Today's walking calories and distance, formatted: "266" and "7.4". */
+data class WalkUi(val kcalText: String, val kmText: String)
 
 /** Everything the Today screen displays, already formatted. */
 data class TodayUiState(
@@ -19,6 +25,8 @@ data class TodayUiState(
     val monthText: String,
     /** The raw goal, used to prefill the goal dialog. */
     val goal: Int,
+    /** Null until both height and weight are set. */
+    val walk: WalkUi?,
 )
 
 fun todayUiState(
@@ -27,6 +35,7 @@ fun todayUiState(
     today: LocalDate,
     firstDayOfWeek: DayOfWeek,
     locale: Locale,
+    body: BodySize?,
 ): TodayUiState {
     val summary = StepStats.summarize(days, today, firstDayOfWeek)
     return TodayUiState(
@@ -37,5 +46,9 @@ fun todayUiState(
         weekText = formatSteps(summary.thisWeek, locale),
         monthText = formatSteps(summary.thisMonth, locale),
         goal = goal,
+        walk = body?.let {
+            val estimate = Walking.estimate(summary.today, it)
+            WalkUi(formatSteps(estimate.kcal, locale), formatKm(estimate.km, locale))
+        },
     )
 }

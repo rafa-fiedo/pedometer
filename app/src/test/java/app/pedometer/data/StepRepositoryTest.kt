@@ -5,9 +5,12 @@ import app.pedometer.testing.InMemoryPreferencesDataStore
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import app.pedometer.core.BodySize
+import app.pedometer.core.WeekStart
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
@@ -149,5 +152,40 @@ class StepRepositoryTest {
         assertFalse(repo.batteryPromptShown.first())
         repo.markBatteryPromptShown()
         assertTrue(repo.batteryPromptShown.first())
+    }
+
+    @Test
+    fun heightAndWeightStartUnsetAndRoundTrip() = runTest {
+        assertNull(repo.heightCm.first())
+        assertNull(repo.weightKg.first())
+        assertNull(repo.bodySize.first())
+        repo.setHeightCm(178)
+        repo.setWeightKg(72)
+        assertEquals(178, repo.heightCm.first())
+        assertEquals(72, repo.weightKg.first())
+        assertEquals(BodySize(178, 72), repo.bodySize.first())
+        repo.setWeightKg(null)
+        assertNull(repo.weightKg.first())
+        assertNull(repo.bodySize.first())
+    }
+
+    @Test
+    fun outOfRangeStoredValuesCountAsUnset() = runTest {
+        dataStore.edit { it[intPreferencesKey("height_cm")] = 999 }
+        assertNull(repo.heightCm.first())
+        assertFailsWith<IllegalArgumentException> { repo.setHeightCm(999) }
+    }
+
+    @Test
+    fun weekStartDefaultsToPhoneAndRoundTrips() = runTest {
+        assertEquals(WeekStart.PHONE_DEFAULT, repo.weekStart.first())
+        repo.setWeekStart(WeekStart.SUNDAY)
+        assertEquals(WeekStart.SUNDAY, repo.weekStart.first())
+    }
+
+    @Test
+    fun unknownWeekStartFallsBackToPhoneDefault() = runTest {
+        dataStore.edit { it[stringPreferencesKey("week_start")] = "TUESDAY" }
+        assertEquals(WeekStart.PHONE_DEFAULT, repo.weekStart.first())
     }
 }

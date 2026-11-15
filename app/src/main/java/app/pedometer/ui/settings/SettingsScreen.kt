@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import app.pedometer.R
+import app.pedometer.core.BodySize
 import app.pedometer.ui.onboarding.needsNotificationPermission
 import app.pedometer.ui.today.GoalDialog
 
@@ -42,6 +43,9 @@ fun SettingsScreen(
     val current = state ?: return
     val context = LocalContext.current
     var editingGoal by rememberSaveable { mutableStateOf(false) }
+    var editingHeight by rememberSaveable { mutableStateOf(false) }
+    var editingWeight by rememberSaveable { mutableStateOf(false) }
+    var editingWeekStart by rememberSaveable { mutableStateOf(false) }
 
     // The goal alert is only switched on once Android allows the app to notify; a refusal
     // leaves the switch off.
@@ -76,6 +80,27 @@ fun SettingsScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+
+        SectionTitle(stringResource(R.string.settings_section_you))
+        ValueRow(
+            title = stringResource(R.string.settings_height),
+            value = current.heightCm?.let { stringResource(R.string.settings_height_value, it) }
+                ?: stringResource(R.string.settings_not_set),
+            onClick = { editingHeight = true },
+        )
+        ValueRow(
+            title = stringResource(R.string.settings_weight),
+            value = current.weightKg?.let { stringResource(R.string.settings_weight_value, it) }
+                ?: stringResource(R.string.settings_not_set),
+            onClick = { editingWeight = true },
+        )
+
+        SectionTitle(stringResource(R.string.settings_section_week))
+        ValueRow(
+            title = stringResource(R.string.settings_week_start),
+            value = weekStartLabel(current.weekStart, current.phoneDefaultDay),
+            onClick = { editingWeekStart = true },
+        )
 
         SectionTitle(stringResource(R.string.settings_section_notifications))
         SwitchRow(
@@ -114,6 +139,62 @@ fun SettingsScreen(
                 editingGoal = false
             },
             onDismiss = { editingGoal = false },
+        )
+    }
+    if (editingHeight) {
+        MeasureDialog(
+            title = stringResource(R.string.settings_height),
+            label = stringResource(R.string.settings_height_field),
+            error = stringResource(R.string.settings_height_error),
+            initial = current.heightCm,
+            range = BodySize.HEIGHT_RANGE,
+            onSave = {
+                viewModel.setHeightCm(it)
+                editingHeight = false
+            },
+            onDismiss = { editingHeight = false },
+        )
+    }
+    if (editingWeight) {
+        MeasureDialog(
+            title = stringResource(R.string.settings_weight),
+            label = stringResource(R.string.settings_weight_field),
+            error = stringResource(R.string.settings_weight_error),
+            initial = current.weightKg,
+            range = BodySize.WEIGHT_RANGE,
+            onSave = {
+                viewModel.setWeightKg(it)
+                editingWeight = false
+            },
+            onDismiss = { editingWeight = false },
+        )
+    }
+    if (editingWeekStart) {
+        WeekStartDialog(
+            selected = current.weekStart,
+            phoneDefaultDay = current.phoneDefaultDay,
+            onSelect = {
+                viewModel.setWeekStart(it)
+                editingWeekStart = false
+            },
+            onDismiss = { editingWeekStart = false },
+        )
+    }
+}
+
+@Composable
+private fun ValueRow(title: String, value: String, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 24.dp, vertical = 12.dp),
+    ) {
+        Text(text = title, style = MaterialTheme.typography.bodyLarge)
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }

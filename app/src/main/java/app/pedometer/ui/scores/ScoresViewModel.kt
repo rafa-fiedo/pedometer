@@ -28,11 +28,14 @@ class ScoresViewModel(
 
     /** Null until the first values have loaded. */
     val state: StateFlow<ScoresUiState?> =
-        combine(repository.days, repository.goal, todaySource.today, controls) { days, goal, today, c ->
+        combine(
+            combine(repository.days, repository.goal, todaySource.today, ::Triple),
+            combine(controls, repository.weekStart, repository.bodySize, ::Triple),
+        ) { (days, goal, today), (c, weekStart, body) ->
             val locale = Locale.getDefault()
             scoresUiState(
-                days, today, goal, firstDayOfWeek(locale), locale,
-                c.range, c.currentPeriodsBack, c.selected,
+                days, today, goal, weekStart.resolve(firstDayOfWeek(locale)), locale,
+                c.range, c.currentPeriodsBack, c.selected, body,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 

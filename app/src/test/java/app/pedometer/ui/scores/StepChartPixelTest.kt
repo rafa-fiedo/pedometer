@@ -48,7 +48,7 @@ class StepChartPixelTest {
         val period = StepChart.periodContaining(range, today, DayOfWeek.MONDAY)
         val data = StepChart.chart(days, period, today, 10_000)
         compose.setContent {
-            val chart = chartUiState(data, this.selected.value, Locale.US)
+            val chart = chartUiState(data, this.selected.value, Locale.US, body = null)
             MaterialTheme(colorScheme = colors) { StepChartView(chart, "chart", onSelect = {}) }
         }
         compose.waitForIdle()

@@ -107,7 +107,17 @@ private fun MainTabs() {
             startDestination = Tab.TODAY.route,
             modifier = Modifier.padding(innerPadding),
         ) {
-            composable(Tab.TODAY.route) { TodayScreen() }
+            composable(Tab.TODAY.route) {
+                TodayScreen(
+                    onOpenSettings = {
+                        navController.navigate(Tab.SETTINGS.route) {
+                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                )
+            }
             composable(Tab.HISTORY.route) { HistoryScreen() }
             composable(Tab.SCORES.route) { ScoresScreen() }
             composable(Tab.SETTINGS.route) { SettingsScreen() }

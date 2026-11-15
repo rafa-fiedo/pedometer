@@ -1,8 +1,11 @@
 package app.pedometer.data
 
+import app.pedometer.core.BodySize
 import app.pedometer.core.DayCount
 import app.pedometer.core.Goal
+import app.pedometer.core.WeekStart
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDate
 
@@ -57,5 +60,32 @@ class StepRepository(
 
     suspend fun markGoalAlertSent(date: LocalDate) {
         settings.markGoalAlertSent(date)
+    }
+
+    /** Height in cm, or null when not set. */
+    val heightCm: Flow<Int?> = settings.heightCm
+
+    /** Weight in kg, or null when not set. */
+    val weightKg: Flow<Int?> = settings.weightKg
+
+    /** Both measurements, or null while either is missing. */
+    val bodySize: Flow<BodySize?> = combine(heightCm, weightKg) { height, weight -> BodySize.of(height, weight) }
+
+    val weekStart: Flow<WeekStart> = settings.weekStart
+
+    /** Null clears the height. */
+    suspend fun setHeightCm(value: Int?) {
+        require(value == null || value in BodySize.HEIGHT_RANGE) { "Height must be in ${BodySize.HEIGHT_RANGE}, was $value" }
+        settings.setHeightCm(value)
+    }
+
+    /** Null clears the weight. */
+    suspend fun setWeightKg(value: Int?) {
+        require(value == null || value in BodySize.WEIGHT_RANGE) { "Weight must be in ${BodySize.WEIGHT_RANGE}, was $value" }
+        settings.setWeightKg(value)
+    }
+
+    suspend fun setWeekStart(value: WeekStart) {
+        settings.setWeekStart(value)
     }
 }

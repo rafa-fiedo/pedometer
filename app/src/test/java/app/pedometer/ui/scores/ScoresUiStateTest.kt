@@ -21,7 +21,7 @@ class ScoresUiStateTest {
     )
 
     private fun state(days: List<DayCount>, range: ChartRange = ChartRange.WEEK, periodsBack: Int = 0) =
-        scoresUiState(days, today, 10_000, DayOfWeek.MONDAY, Locale.US, range, periodsBack, selected = null)
+        scoresUiState(days, today, 10_000, DayOfWeek.MONDAY, Locale.US, range, periodsBack, selected = null, body = null)
 
     @Test
     fun mapsChartAndRecords() {

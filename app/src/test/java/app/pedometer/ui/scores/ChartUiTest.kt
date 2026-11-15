@@ -1,5 +1,6 @@
 package app.pedometer.ui.scores
 
+import app.pedometer.core.BodySize
 import app.pedometer.core.ChartPeriod
 import app.pedometer.core.ChartRange
 import app.pedometer.core.DayCount
@@ -29,9 +30,10 @@ class ChartUiTest {
         date: LocalDate = today,
         first: DayOfWeek = DayOfWeek.MONDAY,
         selected: LocalDate? = null,
+        body: BodySize? = null,
     ): ChartUiState {
         val period = StepChart.periodContaining(range, date, first)
-        return chartUiState(StepChart.chart(november, period, today, 10_000), selected, Locale.US)
+        return chartUiState(StepChart.chart(november, period, today, 10_000), selected, Locale.US, body)
     }
 
     @Test
@@ -95,11 +97,21 @@ class ChartUiTest {
     @Test
     fun selectedDayText() {
         assertEquals(
-            SelectedDay(d("2026-11-10"), "Tue 10 Nov", "6,482"),
+            SelectedDay(d("2026-11-10"), "Tue 10 Nov", "6,482", kcalText = null),
             ui(ChartRange.WEEK, selected = d("2026-11-10")).selected,
         )
         assertNull(ui(ChartRange.WEEK, selected = d("2026-11-12")).selected) // future
         assertNull(ui(ChartRange.WEEK, selected = d("2026-10-01")).selected) // outside the week
+    }
+
+    @Test
+    fun kcalForThePeriodAndTheSelectedDay() {
+        val withBody = ui(ChartRange.WEEK, selected = d("2026-11-10"), body = BodySize(178, 72))
+        assertEquals("470", withBody.kcalText)
+        assertEquals("172", withBody.selected?.kcalText)
+        val withoutBody = ui(ChartRange.WEEK, selected = d("2026-11-10"))
+        assertNull(withoutBody.kcalText)
+        assertNull(withoutBody.selected?.kcalText)
     }
 
     @Test

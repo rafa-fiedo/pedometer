@@ -20,6 +20,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +38,7 @@ import app.pedometer.ui.NotificationsOffHint
 
 @Composable
 fun TodayScreen(
+    onOpenSettings: () -> Unit,
     viewModel: TodayViewModel = viewModel(factory = TodayViewModel.Factory),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -87,6 +89,16 @@ fun TodayScreen(
             IconButton(onClick = { editingGoal = true }) {
                 Icon(Icons.Filled.Edit, contentDescription = stringResource(R.string.today_change_goal))
             }
+        }
+        val walk = current.walk
+        if (walk != null) {
+            Text(
+                text = stringResource(R.string.today_walk, walk.kcalText, walk.kmText),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        } else {
+            TextButton(onClick = onOpenSettings) { Text(stringResource(R.string.today_add_body)) }
         }
         Spacer(Modifier.height(16.dp))
 

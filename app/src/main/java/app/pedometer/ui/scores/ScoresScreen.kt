@@ -105,9 +105,19 @@ fun ScoresContent(
         val selected = chart.selected
         Text(
             text = if (selected != null) {
-                stringResource(R.string.chart_selected_day, selected.dateText, selected.stepsText)
+                val kcal = selected.kcalText
+                if (kcal != null) {
+                    stringResource(R.string.chart_selected_day_kcal, selected.dateText, selected.stepsText, kcal)
+                } else {
+                    stringResource(R.string.chart_selected_day, selected.dateText, selected.stepsText)
+                }
             } else {
-                stringResource(R.string.chart_summary, chart.totalText, chart.averageText)
+                val kcal = chart.kcalText
+                if (kcal != null) {
+                    stringResource(R.string.chart_summary_kcal, chart.totalText, chart.averageText, kcal)
+                } else {
+                    stringResource(R.string.chart_summary, chart.totalText, chart.averageText)
+                }
             },
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.padding(top = 12.dp),

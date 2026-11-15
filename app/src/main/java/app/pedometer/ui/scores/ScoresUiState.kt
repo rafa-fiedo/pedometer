@@ -1,5 +1,6 @@
 package app.pedometer.ui.scores
 
+import app.pedometer.core.BodySize
 import app.pedometer.core.ChartRange
 import app.pedometer.core.DayCount
 import app.pedometer.core.StepChart
@@ -30,13 +31,14 @@ fun scoresUiState(
     range: ChartRange,
     periodsBack: Int,
     selected: LocalDate?,
+    body: BodySize?,
 ): ScoresUiState {
     val summary = StepStats.summarize(days, today, firstDayOfWeek)
     val period = StepChart.shift(StepChart.periodContaining(range, today, firstDayOfWeek), -periodsBack, firstDayOfWeek)
     fun record(day: DayCount?) =
         day?.let { RecordUi(formatSteps(it.steps, locale), formatRecordDate(it.date, locale)) }
     return ScoresUiState(
-        chart = chartUiState(StepChart.chart(days, period, today, goal), selected, locale),
+        chart = chartUiState(StepChart.chart(days, period, today, goal), selected, locale, body),
         bestThisMonth = record(summary.bestDayThisMonth),
         bestThisYear = record(summary.bestDayThisYear),
     )
