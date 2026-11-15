@@ -1,7 +1,6 @@
 package app.pedometer.ui.scores
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,7 +8,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -35,13 +33,6 @@ fun ScoresScreen(viewModel: ScoresViewModel = viewModel(factory = ScoresViewMode
     ) {
         Text(text = stringResource(R.string.tab_scores), style = MaterialTheme.typography.titleLarge)
 
-        SectionTitle(stringResource(R.string.scores_totals))
-        TotalRow(stringResource(R.string.total_today), current.todayText)
-        HorizontalDivider()
-        TotalRow(stringResource(R.string.total_this_week), current.weekText)
-        HorizontalDivider()
-        TotalRow(stringResource(R.string.total_this_month), current.monthText)
-
         SectionTitle(stringResource(R.string.scores_records))
         RecordCard(stringResource(R.string.scores_best_month), current.bestThisMonth)
         Spacer(Modifier.height(12.dp))
@@ -57,18 +48,6 @@ private fun SectionTitle(text: String) {
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(top = 24.dp, bottom = 4.dp),
     )
-}
-
-@Composable
-private fun TotalRow(label: String, value: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 12.dp),
-    ) {
-        Text(text = label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-        Text(text = value, style = MaterialTheme.typography.bodyLarge)
-    }
 }
 
 @Composable
