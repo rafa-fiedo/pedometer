@@ -58,5 +58,9 @@
     <string name="settings_goal_alert_subtitle">One notification a day.</string>
     <string name="settings_periodic_note">With the step count off, steps are collected about every 15 minutes and whenever you open the app.</string>
 
+    <string name="widget_name">Pedometer Pal</string>
+    <string name="widget_description">Today\'s steps</string>
+    <string name="widget_this_week">this week</string>
+
     <string name="notifications_off_hint">Notifications are off, so the step count won\'t show in the notification bar.</string>
 </resources>
