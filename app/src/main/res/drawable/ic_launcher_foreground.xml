@@ -1,15 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Two footprints mid-stride, left foot lower left, right foot upper right. Each foot is
+     drawn in a 44 x 72 box at half size, then placed and turned; the outer group shrinks
+     the pair into the adaptive icon's safe zone (the 66dp circle in the middle). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
     <group
-        android:scaleX="2"
-        android:scaleY="2"
-        android:translateX="30"
-        android:translateY="30">
-        <path
-            android:fillColor="#FFFFFFFF"
-            android:pathData="M13.5,5.5c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM9.8,8.9L7,23h2.1l1.8,-8 2.1,2v6h2v-7.5l-2.1,-2 0.6,-3C14.8,12 16.8,13 19,13v-2c-1.9,0 -3.5,-1 -4.3,-2.4l-1,-1.6c-0.4,-0.6 -1,-1 -1.7,-1 -0.3,0 -0.5,0.1 -0.8,0.1L6,8.3V13h2V9.6l1.8,-0.7" />
+        android:pivotX="54"
+        android:pivotY="54"
+        android:scaleX="0.82"
+        android:scaleY="0.82"
+        android:translateX="2">
+        <!-- Left foot: the right-foot shape mirrored. -->
+        <group android:translateX="30" android:translateY="50">
+            <group android:rotation="-12">
+                <group android:scaleX="-1">
+                    <group android:translateX="-22">
+                        <group android:scaleX="0.5" android:scaleY="0.5">
+                            <path
+                                android:fillColor="#FFFFFFFF"
+                                android:pathData="M12,27C16,21 30,21 35,30C39,38 34,48 30,56C27,63 22,69 16,68C10,67 9,59 11,51C13,44 8,34 12,27Z M8.6,14a5.4,5.4 0,1 0,10.8 0a5.4,5.4 0,1 0,-10.8 0Z M19.7,10a3.8,3.8 0,1 0,7.6 0a3.8,3.8 0,1 0,-7.6 0Z M27.7,12.5a3.3,3.3 0,1 0,6.6 0a3.3,3.3 0,1 0,-6.6 0Z M33.7,18a2.8,2.8 0,1 0,5.6 0a2.8,2.8 0,1 0,-5.6 0Z M37.2,25a2.3,2.3 0,1 0,4.6 0a2.3,2.3 0,1 0,-4.6 0Z" />
+                        </group>
+                    </group>
+                </group>
+            </group>
+        </group>
+        <!-- Right foot. -->
+        <group android:translateX="56" android:translateY="22">
+            <group android:rotation="12">
+                <group android:scaleX="0.5" android:scaleY="0.5">
+                    <path
+                        android:fillColor="#FFFFFFFF"
+                        android:pathData="M12,27C16,21 30,21 35,30C39,38 34,48 30,56C27,63 22,69 16,68C10,67 9,59 11,51C13,44 8,34 12,27Z M8.6,14a5.4,5.4 0,1 0,10.8 0a5.4,5.4 0,1 0,-10.8 0Z M19.7,10a3.8,3.8 0,1 0,7.6 0a3.8,3.8 0,1 0,-7.6 0Z M27.7,12.5a3.3,3.3 0,1 0,6.6 0a3.3,3.3 0,1 0,-6.6 0Z M33.7,18a2.8,2.8 0,1 0,5.6 0a2.8,2.8 0,1 0,-5.6 0Z M37.2,25a2.3,2.3 0,1 0,4.6 0a2.3,2.3 0,1 0,-4.6 0Z" />
+                </group>
+            </group>
+        </group>
     </group>
 </vector>
