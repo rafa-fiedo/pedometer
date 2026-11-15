@@ -29,6 +29,11 @@ class TodayViewModel(
             todayUiState(days, goal, today, firstDayOfWeek(locale), locale)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
+    /** True while either notification switch in Settings is on. */
+    val notificationsWanted: StateFlow<Boolean> =
+        combine(repository.showStepCount, repository.goalAlertEnabled) { count, alert -> count || alert }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
     fun setGoal(goal: Int) {
         if (!Goal.isValid(goal)) return
         viewModelScope.launch { repository.setGoal(goal) }

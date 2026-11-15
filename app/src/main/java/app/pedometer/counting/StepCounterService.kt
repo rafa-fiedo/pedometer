@@ -1,9 +1,7 @@
 package app.pedometer.counting
 
 import android.Manifest
-import android.app.AlarmManager
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -12,25 +10,20 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
-import android.provider.Settings
 import android.util.Log
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import app.pedometer.PedometerApp
 import app.pedometer.core.Goal
 import app.pedometer.currentLocalDate
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -38,18 +31,14 @@ import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.ZonedDateTime
 
 /**
- * Counts steps all day. Runs as a foreground service so Android keeps it alive, reads the
- * phone's cumulative step sensor, and writes new steps to the repository under today's date.
+ * Counts steps continuously. Runs as a foreground service so Android keeps it alive, keeps
+ * the app's [StepRecorder] listening to the step sensor, and shows today's count in a
+ * permanent notification.
  */
 class StepCounterService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-
-    // The sensor reports a running total, so only the newest reading matters. One consumer
-    // reads this channel, which keeps readings in order.
-    private val readings = Channel<Long>(Channel.CONFLATED)
 
     // Bumped when the date, clock or time zone changes, so the notification recomputes
     // "today" even when no steps arrive.
@@ -59,28 +48,26 @@ class StepCounterService : Service() {
     private var shown = Shown(steps = 0, goal = Goal.DEFAULT)
     private var counting = false
 
-    private val sensorManager by lazy { getSystemService(SensorManager::class.java) }
+    private val app get() = application as PedometerApp
     private val notificationManager by lazy { getSystemService(NotificationManager::class.java) }
-    private val repository by lazy { (application as PedometerApp).repository }
-
-    private val sensorListener = object : SensorEventListener {
-        override fun onSensorChanged(event: SensorEvent) {
-            readings.trySend(event.values[0].toLong())
-        }
-
-        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
-    }
 
     private val clockReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             clockChanges.update { it + 1 }
-            scheduleRollover()
+            scheduleRolloverAlarm(this@StepCounterService)
         }
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // Never enters the foreground: it ends a running service, or at once ends a service
+        // created only to receive it. Android delivers start requests in order, so a stop
+        // always arrives after any start that was still under way.
+        if (intent?.action == ACTION_STOP) {
+            stopSelf()
+            return START_NOT_STICKY
+        }
         if (!canCount(this) || !enterForeground()) {
             stopSelf()
             return START_NOT_STICKY
@@ -121,24 +108,10 @@ class StepCounterService : Service() {
         if (counting) return
         counting = true
 
-        val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
-        sensorManager.registerListener(sensorListener, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+        // Collecting keeps the recorder's sensor listener registered while the service runs.
+        scope.launch { app.recorder.recorded.collect { } }
 
-        scope.launch {
-            for (value in readings) {
-                try {
-                    val bootCount = Settings.Global.getInt(contentResolver, Settings.Global.BOOT_COUNT, 0)
-                    repository.recordReading(value, bootCount, currentLocalDate())
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (e: Exception) {
-                    // The baseline was not advanced, so these steps are picked up by the
-                    // next reading instead of being lost.
-                    Log.w(TAG, "Could not record a step reading", e)
-                }
-            }
-        }
-
+        val repository = app.repository
         scope.launch {
             combine(repository.days, repository.goal, clockChanges) { days, goal, _ ->
                 val today = currentLocalDate()
@@ -165,7 +138,7 @@ class StepCounterService : Service() {
         }
         ContextCompat.registerReceiver(this, clockReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
 
-        scheduleRollover()
+        scheduleRolloverAlarm(this)
     }
 
     /** Pulls any steps the sensor is still holding, so they land on the day that is ending. */
@@ -173,35 +146,14 @@ class StepCounterService : Service() {
         getSystemService(PowerManager::class.java)
             .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "PedometerPal:rollover")
             .acquire(FLUSH_WAKE_LOCK_MS)
-        sensorManager.flush(sensorListener)
-        scheduleRollover()
-    }
-
-    private fun scheduleRollover() {
-        val trigger = nextRolloverTrigger(ZonedDateTime.now())
-        val alarm = PendingIntent.getBroadcast(
-            this,
-            0,
-            Intent(this, RolloverReceiver::class.java),
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-        )
-        // A windowed alarm is delivered inside its window. An allow-while-idle alarm would
-        // also fire in deep sleep, but Android may deliver it up to an hour late, which
-        // would push an evening's steps past midnight. A phone in deep sleep is lying
-        // still, so there is nothing to flush then anyway.
-        getSystemService(AlarmManager::class.java).setWindow(
-            AlarmManager.RTC_WAKEUP,
-            trigger.toInstant().toEpochMilli(),
-            ROLLOVER_WINDOW_MS,
-            alarm,
-        )
+        app.sensorReader.flush()
+        scheduleRolloverAlarm(this)
     }
 
     override fun onDestroy() {
-        if (counting) {
-            sensorManager.unregisterListener(sensorListener)
-            unregisterReceiver(clockReceiver)
-        }
+        if (counting) unregisterReceiver(clockReceiver)
+        // Ends this service's collection of the recorder; the sensor is released unless
+        // something else (the visible app) is still listening.
         scope.cancel()
         super.onDestroy()
     }
@@ -210,6 +162,7 @@ class StepCounterService : Service() {
 
     companion object {
         const val ACTION_FLUSH = "app.pedometer.action.FLUSH"
+        const val ACTION_STOP = "app.pedometer.action.STOP"
 
         private const val TAG = "StepCounterService"
         private const val NOTIFICATION_INTERVAL_MS = 5_000L
@@ -224,6 +177,20 @@ class StepCounterService : Service() {
             hasStepSensor(context) &&
                 ContextCompat.checkSelfPermission(context, Manifest.permission.ACTIVITY_RECOGNITION) ==
                 PackageManager.PERMISSION_GRANTED
+
+        /**
+         * Asks the service to stop itself. Used instead of stopService, which could catch a
+         * service that has just been started before it reached the foreground and crash the
+         * app.
+         */
+        fun requestStop(context: Context) {
+            try {
+                context.startService(Intent(context, StepCounterService::class.java).setAction(ACTION_STOP))
+            } catch (e: IllegalStateException) {
+                // Refused only while the app is in the background with no service running,
+                // so there is nothing to stop.
+            }
+        }
 
         /** Starts counting if possible; safe to call repeatedly. */
         fun start(context: Context) {
