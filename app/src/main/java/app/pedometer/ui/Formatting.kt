@@ -13,6 +13,13 @@ import java.util.Locale
 fun formatSteps(steps: Int, locale: Locale): String =
     NumberFormat.getIntegerInstance(locale).format(steps)
 
+/** A distance in km with exactly one decimal, e.g. "7.4" (or "7,4" where commas are used). */
+fun formatKm(km: Double, locale: Locale): String =
+    NumberFormat.getNumberInstance(locale).apply {
+        minimumFractionDigits = 1
+        maximumFractionDigits = 1
+    }.format(km)
+
 /** "Tuesday, 10 November" */
 fun formatLongDate(date: LocalDate, locale: Locale): String = format(date, "EEEE, d MMMM", locale)
 

@@ -52,6 +52,10 @@
     <string name="chart_next">Next period</string>
     <string name="chart_summary">%1$s total · %2$s a day</string>
     <string name="chart_selected_day">%1$s · %2$s steps</string>
+    <string name="chart_summary_kcal">%1$s total · %2$s a day · %3$s kcal</string>
+    <string name="chart_selected_day_kcal">%1$s · %2$s steps · %3$s kcal</string>
+    <string name="today_walk">%1$s kcal · %2$s km</string>
+    <string name="today_add_body">Add your height and weight to see calories</string>
     <string name="chart_description">%1$s: %2$s total, %3$s a day</string>
 
     <string name="settings_title">Settings</string>

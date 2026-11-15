@@ -24,9 +24,11 @@ class TodayViewModel(
 ) : ViewModel() {
     /** Null until the first values have loaded. */
     val state: StateFlow<TodayUiState?> =
-        combine(repository.days, repository.goal, todaySource.today, repository.weekStart) { days, goal, today, weekStart ->
+        combine(
+            repository.days, repository.goal, todaySource.today, repository.weekStart, repository.bodySize,
+        ) { days, goal, today, weekStart, body ->
             val locale = Locale.getDefault()
-            todayUiState(days, goal, today, weekStart.resolve(firstDayOfWeek(locale)), locale)
+            todayUiState(days, goal, today, weekStart.resolve(firstDayOfWeek(locale)), locale, body)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     /** True while either notification switch in Settings is on. */

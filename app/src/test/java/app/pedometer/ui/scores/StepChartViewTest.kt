@@ -42,7 +42,7 @@ class StepChartViewTest {
 
     private fun show(range: ChartRange, selected: LocalDate? = null, description: String = "chart") {
         val period = StepChart.periodContaining(range, today, DayOfWeek.MONDAY)
-        val chart = chartUiState(StepChart.chart(november, period, today, 10_000), selected, Locale.US)
+        val chart = chartUiState(StepChart.chart(november, period, today, 10_000), selected, Locale.US, body = null)
         compose.setContent { StepChartView(chart, description, onSelect = { selections += it }) }
     }
 

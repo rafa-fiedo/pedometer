@@ -6,6 +6,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import app.pedometer.core.BodySize
 import app.pedometer.core.ChartRange
 import app.pedometer.core.DayCount
 import kotlinx.datetime.DayOfWeek
@@ -39,9 +40,9 @@ class ScoresContentTest {
     private val ranges = mutableListOf<ChartRange>()
     private var previousClicks = 0
 
-    private fun show(selected: LocalDate? = null) {
+    private fun show(selected: LocalDate? = null, body: BodySize? = null) {
         val state = scoresUiState(
-            november, today, 10_000, DayOfWeek.MONDAY, Locale.US, ChartRange.WEEK, 0, selected,
+            november, today, 10_000, DayOfWeek.MONDAY, Locale.US, ChartRange.WEEK, 0, selected, body,
         )
         compose.setContent {
             ScoresContent(
@@ -68,6 +69,18 @@ class ScoresContentTest {
         show(selected = d("2026-11-10"))
         compose.onNodeWithText("Tue 10 Nov · 6,482 steps").assertIsDisplayed()
         compose.onNodeWithText("17,686 total · 8,843 a day").assertDoesNotExist()
+    }
+
+    @Test
+    fun summaryIncludesCaloriesWithABodySize() {
+        show(body = BodySize(178, 72))
+        compose.onNodeWithText("17,686 total · 8,843 a day · 470 kcal").assertIsDisplayed()
+    }
+
+    @Test
+    fun selectedDayIncludesCaloriesWithABodySize() {
+        show(selected = d("2026-11-10"), body = BodySize(178, 72))
+        compose.onNodeWithText("Tue 10 Nov · 6,482 steps · 172 kcal").assertIsDisplayed()
     }
 
     @Test

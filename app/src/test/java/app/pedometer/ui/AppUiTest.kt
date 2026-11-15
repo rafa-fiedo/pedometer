@@ -123,6 +123,19 @@ class AppUiTest {
     }
 
     @Test
+    fun theCaloriesLinkOpensSettings() {
+        shadowOf(app).grantPermissions(Manifest.permission.ACTIVITY_RECOGNITION)
+
+        launch(skipSensorCheck = true).use {
+            waitForText("Keep counting in the background")
+            compose.onNodeWithText("Not now").performClick()
+            waitForText("Add your height and weight to see calories")
+            compose.onNodeWithText("Add your height and weight to see calories").performClick()
+            waitForText("Daily goal")
+        }
+    }
+
+    @Test
     fun settingsShowsTheRowsAndSavesTheStepCountSwitch() {
         shadowOf(app).grantPermissions(Manifest.permission.ACTIVITY_RECOGNITION)
 
@@ -176,6 +189,14 @@ class AppUiTest {
             }
 
             compose.onNodeWithContentDescription("Change goal").assertIsDisplayed()
+
+            // Calories need height and weight; until then Today offers a way to add them.
+            compose.onNodeWithText("Add your height and weight to see calories").assertIsDisplayed()
+            runBlocking {
+                app.repository.setHeightCm(178)
+                app.repository.setWeightKg(72)
+            }
+            waitForText("342 kcal · 9.5 km")
 
             // History: four days, newest first, with the two gap days shown as 0.
             compose.onNodeWithText("History").performClick()
