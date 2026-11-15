@@ -27,6 +27,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
+import java.util.Locale
 import kotlin.test.assertEquals
 
 /**
@@ -168,11 +169,13 @@ class AppUiTest {
             compose.onNodeWithText("Today").performClick()
             waitForText("of 5,000 steps")
 
-            // Scores: today's total and both records show today's count.
+            // Scores: both records show today's count, and the chart switches to the month.
             compose.onNodeWithText("Scores").performClick()
             waitForText("Best day this month")
             compose.onNodeWithText("Best day this year").assertIsDisplayed()
-            assertEquals(true, compose.onAllNodesWithText("12,870").fetchSemanticsNodes().size >= 3)
+            assertEquals(true, compose.onAllNodesWithText("12,870").fetchSemanticsNodes().size >= 2)
+            compose.onNodeWithText("Month").performClick()
+            waitForText(formatMonthTitle(today, Locale.getDefault()))
         }
     }
 }

@@ -29,7 +29,6 @@
     <string name="battery_not_now">Not now</string>
 
     <string name="today_change_goal">Change goal</string>
-    <string name="total_today">Today</string>
     <string name="total_this_week">This week</string>
     <string name="total_this_month">This month</string>
 
@@ -42,11 +41,18 @@
     <string name="history_empty">Your days will appear here</string>
     <string name="history_goal_reached">Goal reached</string>
 
-    <string name="scores_totals">Totals</string>
     <string name="scores_records">Records</string>
     <string name="scores_best_month">Best day this month</string>
     <string name="scores_best_year">Best day this year</string>
     <string name="scores_no_record">–</string>
+    <string name="chart_week">Week</string>
+    <string name="chart_month">Month</string>
+    <string name="chart_year">Year</string>
+    <string name="chart_previous">Previous period</string>
+    <string name="chart_next">Next period</string>
+    <string name="chart_summary">%1$s total · %2$s a day</string>
+    <string name="chart_selected_day">%1$s · %2$s steps</string>
+    <string name="chart_description">%1$s: %2$s total, %3$s a day</string>
 
     <string name="settings_title">Settings</string>
     <string name="settings_section_goal">Goal</string>
