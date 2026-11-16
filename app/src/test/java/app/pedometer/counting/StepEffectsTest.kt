@@ -72,6 +72,7 @@ class StepEffectsTest {
 
     @Test
     fun sendsOnceWhenTheGoalIsReached() = runBlocking {
+        repo.setGoal(10_000)
         repo.setGoalAlertEnabled(true)
         repo.addSteps(d("2026-11-12"), 10_000)
 
@@ -87,6 +88,7 @@ class StepEffectsTest {
 
     @Test
     fun staysQuietBelowTheGoalOrWhenSwitchedOff() = runBlocking {
+        repo.setGoalAlertEnabled(false)
         repo.addSteps(d("2026-11-12"), 12_000)
         effects.refreshNow() // the switch is off
 

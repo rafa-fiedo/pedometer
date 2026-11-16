@@ -27,10 +27,14 @@ class SettingsStore(private val dataStore: DataStore<Preferences>) {
 
     val batteryPromptShown: Flow<Boolean> = preferences.map { it[BATTERY_PROMPT_SHOWN] ?: false }
 
-    /** Whether the permanent step count notification (and with it continuous counting) is on. */
-    val showStepCount: Flow<Boolean> = preferences.map { it[SHOW_STEP_COUNT] ?: true }
+    /**
+     * Whether the permanent step count notification (and with it continuous counting) is on.
+     * Off on a fresh install: steps are caught up periodically instead.
+     */
+    val showStepCount: Flow<Boolean> = preferences.map { it[SHOW_STEP_COUNT] ?: false }
 
-    val goalAlertEnabled: Flow<Boolean> = preferences.map { it[GOAL_ALERT_ENABLED] ?: false }
+    /** On by default: a fresh install says when the goal is reached and stays quiet otherwise. */
+    val goalAlertEnabled: Flow<Boolean> = preferences.map { it[GOAL_ALERT_ENABLED] ?: true }
 
     /** The day the goal-reached notification was last sent; null if never, or if unreadable. */
     val lastGoalAlertDate: Flow<LocalDate?> = preferences.map { stored ->

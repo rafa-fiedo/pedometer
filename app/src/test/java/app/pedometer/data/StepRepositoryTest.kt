@@ -118,7 +118,7 @@ class StepRepositoryTest {
 
     @Test
     fun goalDefaultsAndPersists() = runTest {
-        assertEquals(10_000, repo.goal.first())
+        assertEquals(6_000, repo.goal.first())
         repo.setGoal(8_000)
         assertEquals(8_000, repo.goal.first())
         assertFailsWith<IllegalArgumentException> { repo.setGoal(100) }
@@ -126,12 +126,13 @@ class StepRepositoryTest {
 
     @Test
     fun notificationSwitchesDefaultAndPersist() = runTest {
-        assertTrue(repo.showStepCount.first())
-        assertFalse(repo.goalAlertEnabled.first())
-        repo.setShowStepCount(false)
-        repo.setGoalAlertEnabled(true)
+        // A fresh install: no permanent notification, but a message when the goal is reached.
         assertFalse(repo.showStepCount.first())
         assertTrue(repo.goalAlertEnabled.first())
+        repo.setShowStepCount(true)
+        repo.setGoalAlertEnabled(false)
+        assertTrue(repo.showStepCount.first())
+        assertFalse(repo.goalAlertEnabled.first())
     }
 
     @Test

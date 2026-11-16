@@ -147,22 +147,26 @@ class AppUiTest {
             }
 
             // Settings is the fourth tab; the Today screen no longer has a gear for it.
-            waitForText("of 10,000 steps")
+            waitForText("of 6,000 steps")
             assertEquals(0, compose.onAllNodesWithContentDescription("Settings").fetchSemanticsNodes().size)
             compose.onNodeWithText("Settings").performClick()
             waitForText("Daily goal")
-            compose.onNodeWithText("10,000 steps").assertIsDisplayed()
+            compose.onNodeWithText("6,000 steps").assertIsDisplayed()
             compose.onNodeWithText("Tell me when I reach my goal").assertIsDisplayed()
             // The tabs stay visible on the Settings screen, and it has no back arrow.
             compose.onNodeWithText("Today").assertIsDisplayed()
             assertEquals(0, compose.onAllNodesWithContentDescription("Back").fetchSemanticsNodes().size)
 
+            // A fresh install starts with the step count off, so the catch-up note is shown;
+            // switching it on hides the note and saves the choice.
+            val note = "With the step count off, steps are collected about every 15 minutes " +
+                "and whenever you open the app."
+            waitForText(note)
             compose.onNodeWithText("Show step count").performClick()
-            waitForText(
-                "With the step count off, steps are collected about every 15 minutes " +
-                    "and whenever you open the app.",
-            )
-            assertEquals(false, runBlocking { app.repository.showStepCount.first() })
+            compose.waitUntil(timeoutMillis = 10_000) {
+                compose.onAllNodesWithText(note).fetchSemanticsNodes().isEmpty()
+            }
+            assertEquals(true, runBlocking { app.repository.showStepCount.first() })
         }
     }
 
@@ -171,6 +175,8 @@ class AppUiTest {
         shadowOf(app).grantPermissions(Manifest.permission.ACTIVITY_RECOGNITION)
         val today = currentLocalDate()
         runBlocking {
+            // A 10,000 goal, so only the 12,870 day counts as reached until the goal is lowered.
+            app.repository.setGoal(10_000)
             app.repository.addSteps(today, 12_870)
             app.repository.addSteps(today.minus(3, DateTimeUnit.DAY), 6_482)
         }

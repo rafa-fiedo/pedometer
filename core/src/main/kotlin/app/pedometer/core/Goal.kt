@@ -4,7 +4,7 @@ package app.pedometer.core
 object Goal {
     const val MIN = 500
     const val MAX = 100_000
-    const val DEFAULT = 10_000
+    const val DEFAULT = 6_000
 
     fun isValid(value: Int): Boolean = value in MIN..MAX
 
