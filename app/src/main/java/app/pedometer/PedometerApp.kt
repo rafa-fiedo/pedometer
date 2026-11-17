@@ -14,8 +14,7 @@ import app.pedometer.counting.StepSensorReader
 import app.pedometer.data.AppDatabase
 import app.pedometer.data.SettingsStore
 import app.pedometer.data.StepRepository
-import app.pedometer.widget.PedometerWidget
-import androidx.glance.appwidget.updateAll
+import app.pedometer.widget.updateAllWidgets
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -46,7 +45,7 @@ class PedometerApp : Application() {
     val sensorReader: StepSensorReader by lazy { StepSensorReader(this) }
 
     val effects: StepEffects by lazy {
-        StepEffects(this, repository, appScope, refreshWidget = { PedometerWidget().updateAll(this@PedometerApp) })
+        StepEffects(this, repository, appScope, refreshWidget = { updateAllWidgets(this@PedometerApp) })
     }
 
     val recorder: StepRecorder by lazy {

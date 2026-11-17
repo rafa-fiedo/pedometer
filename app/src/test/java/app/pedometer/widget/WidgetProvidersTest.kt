@@ -77,11 +77,23 @@ class WidgetProvidersTest {
     }
 
     @Test
-    fun thePickerListsFourEntries() {
+    fun roundEntryIsAFixedOneByOne() {
+        val xml = R.xml.pedometer_widget_round
+        assertEquals(1, intAttr(xml, android.R.attr.targetCellWidth))
+        assertEquals(1, intAttr(xml, android.R.attr.targetCellHeight))
+        assertEquals(0, intAttr(xml, android.R.attr.resizeMode))
+    }
+
+    @Test
+    fun roundReceiverDrawsTheRoundWidget() =
+        assertTrue(RoundStepsWidgetReceiver().glanceAppWidget is RoundStepsWidget)
+
+    @Test
+    fun thePickerListsFiveEntries() {
         val receivers = context.packageManager
             .queryBroadcastReceivers(Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE).setPackage(context.packageName), 0)
             .map { it.activityInfo.name }
             .toSet()
-        assertEquals(entries.map { it.receiver.name }.toSet(), receivers)
+        assertEquals(entries.map { it.receiver.name }.toSet() + RoundStepsWidgetReceiver::class.java.name, receivers)
     }
 }
