@@ -87,6 +87,7 @@
     <string name="widget_name_4x1">Steps 4 × 1</string>
     <string name="widget_description">Today\'s steps</string>
     <string name="widget_this_week">this week</string>
+    <string name="widget_refresh">Refresh steps</string>
 
     <string name="notifications_off_hint">Notifications are off, so the step count won\'t show in the notification bar.</string>
 </resources>

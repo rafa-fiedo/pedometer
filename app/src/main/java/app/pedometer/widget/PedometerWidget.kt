@@ -20,6 +20,7 @@ import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.LinearProgressIndicator
 import androidx.glance.appwidget.SizeMode
+import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.appWidgetBackground
 import androidx.glance.appwidget.cornerRadius
@@ -49,6 +50,9 @@ import java.util.Locale
 
 /** Marks the progress bar, so tests can tell the three-cell layout from the two-cell one. */
 const val PROGRESS_TAG = "progress"
+
+/** Marks the refresh arrow on the wider layouts. */
+const val REFRESH_TAG = "refresh"
 
 /** The home-screen widget: one row tall, 1 to 4 cells wide, showing more as it widens. */
 class PedometerWidget : GlanceAppWidget() {
@@ -151,6 +155,18 @@ fun WidgetContent(state: WidgetState, width: WidgetWidth) {
                 Text(text = context.getString(R.string.widget_this_week), style = labelStyle(), maxLines = 1)
             }
         }
+        // At two cells nothing stretches, so a flexible gap pushes the arrow to the right end.
+        Spacer(if (width == WidgetWidth.TWO) GlanceModifier.defaultWeight() else GlanceModifier.width(8.dp))
+        // Reads the step sensor now instead of waiting for the next background catch-up.
+        Image(
+            provider = ImageProvider(R.drawable.ic_refresh),
+            contentDescription = context.getString(R.string.widget_refresh),
+            modifier = GlanceModifier
+                .size(20.dp)
+                .clickable(actionRunCallback<RefreshWidgetAction>())
+                .semantics { testTag = REFRESH_TAG },
+            colorFilter = ColorFilter.tint(GlanceTheme.colors.primary),
+        )
     }
 }
 

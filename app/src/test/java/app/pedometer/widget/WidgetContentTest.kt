@@ -1,6 +1,7 @@
 package app.pedometer.widget
 
 import androidx.glance.appwidget.testing.unit.GlanceAppWidgetUnitTest
+import androidx.glance.appwidget.testing.unit.hasRunCallbackClickAction
 import androidx.glance.appwidget.testing.unit.runGlanceAppWidgetUnitTest
 import androidx.glance.testing.unit.hasTestTag
 import androidx.glance.testing.unit.hasText
@@ -50,5 +51,20 @@ class WidgetContentTest {
         onNode(hasText("17,686")).assertExists()
         onNode(hasText("this week")).assertExists()
         onNode(hasTestTag(PROGRESS_TAG)).assertExists()
+    }
+
+    @Test
+    fun widerLayoutsHaveARefreshArrow() {
+        for (width in listOf(WidgetWidth.TWO, WidgetWidth.THREE, WidgetWidth.FOUR)) {
+            widget(width) {
+                onNode(hasTestTag(REFRESH_TAG) and hasRunCallbackClickAction<RefreshWidgetAction>())
+                    .assertExists()
+            }
+        }
+    }
+
+    @Test
+    fun oneCellHasNoRefreshArrow() = widget(WidgetWidth.ONE) {
+        onNode(hasTestTag(REFRESH_TAG)).assertDoesNotExist()
     }
 }
