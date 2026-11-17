@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.ColorFilter
@@ -34,6 +33,7 @@ import androidx.glance.semantics.semantics
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
+import androidx.glance.unit.ColorProvider
 import app.pedometer.PedometerApp
 import app.pedometer.R
 import app.pedometer.currentLocalDate
@@ -74,16 +74,10 @@ class RoundStepsWidget : GlanceAppWidget() {
             val locale = Locale.getDefault()
             val state = widgetState(days, goal, currentLocalDate(), weekStart.resolve(firstDayOfWeek(locale)), locale)
             GlanceTheme {
-                val glanceContext = LocalContext.current
-                val colors = GlanceTheme.colors
-                val circle = colors.widgetBackground.getColor(glanceContext).toArgb()
-                val track = colors.surfaceVariant.getColor(glanceContext).toArgb()
-                val fill = colors.primary.getColor(glanceContext).toArgb()
-                val sizePx = (ROUND_DIAMETER.value * glanceContext.resources.displayMetrics.density).roundToInt()
-                val ring = remember(state.progress, circle, track, fill, sizePx) {
-                    drawGoalRing(sizePx, state.progress, circle, track, fill)
-                }
-                RoundWidgetContent(state, ring)
+                val density = LocalContext.current.resources.displayMetrics.density
+                val sizePx = (ROUND_DIAMETER.value * density).roundToInt()
+                val arc = remember(state.progress, sizePx) { drawGoalArc(sizePx, state.progress) }
+                RoundWidgetContent(state, arc)
             }
         }
     }
@@ -93,8 +87,12 @@ class RoundStepsWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = RoundStepsWidget()
 }
 
+/**
+ * The circle, the track and the [arc] mask are white layers tinted with theme colours, so the
+ * launcher recolours them along with the text when the phone switches between light and dark.
+ */
 @Composable
-fun RoundWidgetContent(state: WidgetState, ring: Bitmap) {
+fun RoundWidgetContent(state: WidgetState, arc: Bitmap) {
     val context = LocalContext.current
     val cell = LocalSize.current
     val diameter = minOf(ROUND_DIAMETER, cell.width, cell.height)
@@ -107,7 +105,9 @@ fun RoundWidgetContent(state: WidgetState, ring: Bitmap) {
         contentAlignment = Alignment.Center,
     ) {
         Box(modifier = GlanceModifier.size(diameter), contentAlignment = Alignment.Center) {
-            Image(provider = ImageProvider(ring), contentDescription = null, modifier = GlanceModifier.fillMaxSize())
+            ThemedLayer(ImageProvider(R.drawable.round_widget_circle), GlanceTheme.colors.widgetBackground)
+            ThemedLayer(ImageProvider(R.drawable.round_widget_track), GlanceTheme.colors.surfaceVariant)
+            ThemedLayer(ImageProvider(arc), GlanceTheme.colors.primary)
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Image(
                     provider = ImageProvider(R.drawable.ic_footprints),
@@ -127,4 +127,14 @@ fun RoundWidgetContent(state: WidgetState, ring: Bitmap) {
             }
         }
     }
+}
+
+@Composable
+private fun ThemedLayer(provider: ImageProvider, color: ColorProvider) {
+    Image(
+        provider = provider,
+        contentDescription = null,
+        modifier = GlanceModifier.fillMaxSize(),
+        colorFilter = ColorFilter.tint(color),
+    )
 }
