@@ -6,6 +6,7 @@ import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.testing.unit.GlanceAppWidgetUnitTest
 import androidx.glance.appwidget.testing.unit.hasRunCallbackClickAction
 import androidx.glance.appwidget.testing.unit.runGlanceAppWidgetUnitTest
+import androidx.glance.testing.unit.hasTestTag
 import androidx.glance.testing.unit.hasText
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Test
@@ -36,7 +37,12 @@ class RoundWidgetContentTest {
 
     @Test
     fun tappingRefreshes() = widget {
-        onNode(hasRunCallbackClickAction<RefreshWidgetAction>()).assertExists()
+        onAllNodes(hasRunCallbackClickAction<RefreshWidgetAction>()).assertCountEquals(2)
+    }
+
+    @Test
+    fun hasARefreshArrow() = widget {
+        onNode(hasTestTag(REFRESH_TAG) and hasRunCallbackClickAction<RefreshWidgetAction>()).assertExists()
     }
 
     @Test

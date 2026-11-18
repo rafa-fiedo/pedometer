@@ -54,17 +54,12 @@ class WidgetContentTest {
     }
 
     @Test
-    fun widerLayoutsHaveARefreshArrow() {
-        for (width in listOf(WidgetWidth.TWO, WidgetWidth.THREE, WidgetWidth.FOUR)) {
+    fun everyLayoutHasARefreshArrow() {
+        for (width in WidgetWidth.entries) {
             widget(width) {
                 onNode(hasTestTag(REFRESH_TAG) and hasRunCallbackClickAction<RefreshWidgetAction>())
                     .assertExists()
             }
         }
-    }
-
-    @Test
-    fun oneCellHasNoRefreshArrow() = widget(WidgetWidth.ONE) {
-        onNode(hasTestTag(REFRESH_TAG)).assertDoesNotExist()
     }
 }

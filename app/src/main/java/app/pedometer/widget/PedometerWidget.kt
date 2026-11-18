@@ -27,6 +27,7 @@ import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.layout.Alignment
+import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
@@ -51,7 +52,7 @@ import java.util.Locale
 /** Marks the progress bar, so tests can tell the three-cell layout from the two-cell one. */
 const val PROGRESS_TAG = "progress"
 
-/** Marks the refresh arrow on the wider layouts. */
+/** Marks the refresh arrow, on every layout and on the round widget. */
 const val REFRESH_TAG = "refresh"
 
 /** The home-screen widget: one row tall, 1 to 4 cells wide, showing more as it widens. */
@@ -118,13 +119,19 @@ fun WidgetContent(state: WidgetState, width: WidgetWidth) {
         .clickable(actionStartActivity(appLaunchIntent(context)))
 
     if (width == WidgetWidth.ONE) {
-        Column(
-            modifier = container,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            WalkIcon(size = 16)
-            Text(text = state.stepsText, style = valueStyle(13), maxLines = 1)
+        Box(modifier = container) {
+            Column(
+                modifier = GlanceModifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                WalkIcon(size = 16)
+                Text(text = state.stepsText, style = valueStyle(13), maxLines = 1)
+            }
+            // A full-size layer aligned top-end puts the small arrow in the corner.
+            Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.TopEnd) {
+                RefreshArrow(iconSize = 14, modifier = GlanceModifier.padding(4.dp))
+            }
         }
         return
     }
@@ -157,17 +164,22 @@ fun WidgetContent(state: WidgetState, width: WidgetWidth) {
         }
         // At two cells nothing stretches, so a flexible gap pushes the arrow to the right end.
         Spacer(if (width == WidgetWidth.TWO) GlanceModifier.defaultWeight() else GlanceModifier.width(8.dp))
-        // Reads the step sensor now instead of waiting for the next background catch-up.
-        Image(
-            provider = ImageProvider(R.drawable.ic_refresh),
-            contentDescription = context.getString(R.string.widget_refresh),
-            modifier = GlanceModifier
-                .size(20.dp)
-                .clickable(actionRunCallback<RefreshWidgetAction>())
-                .semantics { testTag = REFRESH_TAG },
-            colorFilter = ColorFilter.tint(GlanceTheme.colors.primary),
-        )
+        RefreshArrow(iconSize = 20)
     }
+}
+
+/** Reads the step sensor now instead of waiting for the next background catch-up. */
+@Composable
+fun RefreshArrow(iconSize: Int, modifier: GlanceModifier = GlanceModifier) {
+    Image(
+        provider = ImageProvider(R.drawable.ic_refresh),
+        contentDescription = LocalContext.current.getString(R.string.widget_refresh),
+        modifier = modifier
+            .size(iconSize.dp)
+            .clickable(actionRunCallback<RefreshWidgetAction>())
+            .semantics { testTag = REFRESH_TAG },
+        colorFilter = ColorFilter.tint(GlanceTheme.colors.primary),
+    )
 }
 
 @Composable

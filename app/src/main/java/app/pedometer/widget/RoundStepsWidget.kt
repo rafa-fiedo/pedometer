@@ -45,6 +45,9 @@ import kotlin.math.roundToInt
 /** The circle's diameter: about the size of an app icon. */
 private val ROUND_DIAMETER = 56.dp
 
+/** The refresh badge on the circle's top-right edge. */
+private val ROUND_BADGE = 18.dp
+
 /** Six-digit counts ("12,870") get a smaller font so they fit inside the circle. */
 fun roundStepsFontSp(stepsText: String): Int = if (stepsText.length > 5) 10 else 12
 
@@ -124,6 +127,14 @@ fun RoundWidgetContent(state: WidgetState, arc: Bitmap) {
                     ),
                     maxLines = 1,
                 )
+            }
+            // A small badge on the circle's top-right edge, backed by a disc so the arrow
+            // reads over the ring and the wallpaper alike.
+            Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.TopEnd) {
+                Box(modifier = GlanceModifier.size(ROUND_BADGE), contentAlignment = Alignment.Center) {
+                    ThemedLayer(ImageProvider(R.drawable.round_widget_circle), GlanceTheme.colors.widgetBackground)
+                    RefreshArrow(iconSize = 12)
+                }
             }
         }
     }
