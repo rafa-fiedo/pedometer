@@ -82,7 +82,7 @@ fun formatPeriodLabel(period: ChartPeriod, locale: Locale): String {
     return when (period.range) {
         ChartRange.WEEK -> when {
             start.year != end.year -> "${format(start, "d MMM yyyy", locale)} – ${format(end, "d MMM yyyy", locale)}"
-            start.monthNumber != end.monthNumber -> "${format(start, "d MMM", locale)} – ${format(end, "d MMM", locale)}"
+            start.month != end.month -> "${format(start, "d MMM", locale)} – ${format(end, "d MMM", locale)}"
             else -> "${format(start, "d", locale)}–${format(end, "d MMM", locale)}"
         }
         ChartRange.MONTH -> formatMonthTitle(start, locale)
@@ -97,9 +97,9 @@ fun dayIndexAt(x: Float, width: Float, count: Int): Int =
 private fun axisLabels(range: ChartRange, bars: List<ChartBar>, locale: Locale): List<AxisLabel> =
     when (range) {
         ChartRange.WEEK -> bars.mapIndexed { i, bar -> AxisLabel(i, format(bar.date, "EEEEE", locale)) }
-        ChartRange.MONTH -> listOf(0, 9, 19, bars.lastIndex).map { i -> AxisLabel(i, bars[i].date.dayOfMonth.toString()) }
+        ChartRange.MONTH -> listOf(0, 9, 19, bars.lastIndex).map { i -> AxisLabel(i, bars[i].date.day.toString()) }
         ChartRange.YEAR -> bars.mapIndexedNotNull { i, bar ->
-            if (bar.date.dayOfMonth == 1) AxisLabel(i, format(bar.date, "MMMMM", locale)) else null
+            if (bar.date.day == 1) AxisLabel(i, format(bar.date, "MMMMM", locale)) else null
         }
     }
 

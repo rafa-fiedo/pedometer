@@ -3,10 +3,10 @@ package app.pedometer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
+import kotlin.time.Clock
 
 /** Today's date according to the phone's clock and time zone. */
 fun currentLocalDate(): LocalDate = Clock.System.todayIn(TimeZone.currentSystemDefault())

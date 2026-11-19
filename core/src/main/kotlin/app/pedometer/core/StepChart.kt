@@ -39,7 +39,7 @@ object StepChart {
                 ChartPeriod(range, start, start.plus(6, DateTimeUnit.DAY))
             }
             ChartRange.MONTH -> {
-                val start = LocalDate(date.year, date.monthNumber, 1)
+                val start = LocalDate(date.year, date.month, 1)
                 ChartPeriod(range, start, start.plus(1, DateTimeUnit.MONTH).minus(1, DateTimeUnit.DAY))
             }
             ChartRange.YEAR -> ChartPeriod(range, LocalDate(date.year, 1, 1), LocalDate(date.year, 12, 31))

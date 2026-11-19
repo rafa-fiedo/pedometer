@@ -27,8 +27,8 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.robolectric.shadows.SensorEventBuilder
 import org.robolectric.shadows.ShadowSensor
-import org.robolectric.shadows.ShadowSensorManager
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -78,8 +78,10 @@ class StepRecorderTest {
     /** Sends one sensor reading and waits until the recorder has written it. */
     private suspend fun emit(value: Long) = coroutineScope {
         val written = async(start = CoroutineStart.UNDISPATCHED) { recorder.recorded.first() }
-        val event = ShadowSensorManager.createSensorEvent(1, Sensor.TYPE_STEP_COUNTER)
-        event.values[0] = value.toFloat()
+        val event = SensorEventBuilder.newBuilder()
+            .setSensor(sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)!!)
+            .setValues(floatArrayOf(value.toFloat()))
+            .build()
         shadowOf(sensorManager).sendSensorEventToListeners(event)
         written.await()
     }

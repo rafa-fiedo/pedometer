@@ -46,7 +46,6 @@ import app.pedometer.currentLocalDate
 import app.pedometer.ui.appLaunchIntent
 import app.pedometer.ui.firstDayOfWeek
 import kotlinx.coroutines.flow.first
-import java.util.Locale
 
 /** Marks the progress bar, so tests can tell the three-cell layout from the two-cell one. */
 const val PROGRESS_TAG = "progress"
@@ -77,7 +76,8 @@ class PedometerWidget : GlanceAppWidget() {
             val days by repository.days.collectAsState(initialDays)
             val goal by repository.goal.collectAsState(initialGoal)
             val weekStart by repository.weekStart.collectAsState(initialWeekStart)
-            val locale = Locale.getDefault()
+            // From the configuration rather than Locale.getDefault(), which composition cannot observe.
+            val locale = LocalContext.current.resources.configuration.locales[0]
             val state = widgetState(days, goal, currentLocalDate(), weekStart.resolve(firstDayOfWeek(locale)), locale)
             GlanceTheme {
                 WidgetContent(state, widgetWidth(LocalSize.current.width.value))
