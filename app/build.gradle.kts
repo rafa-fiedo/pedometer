@@ -4,6 +4,16 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+// Every commit raises the version by itself: the version code is the number of commits on
+// HEAD, and it is also the last part of the version name. Raise appVersion by hand for a
+// release that deserves a new major or minor number. Builds outside a git checkout fall
+// back to 1.
+val appVersion = "1.0"
+val commitCount: Int = runCatching {
+    providers.exec { commandLine("git", "rev-list", "--count", "HEAD") }
+        .standardOutput.asText.get().trim().toInt()
+}.getOrDefault(1)
+
 android {
     namespace = "app.pedometer"
     compileSdk = 37
@@ -12,8 +22,8 @@ android {
         applicationId = "app.pedometer"
         minSdk = 29
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = commitCount
+        versionName = "$appVersion.$commitCount"
     }
 
     buildTypes {

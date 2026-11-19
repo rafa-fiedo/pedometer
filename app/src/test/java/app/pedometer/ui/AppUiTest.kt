@@ -13,6 +13,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.testing.WorkManagerTestInitHelper
+import app.pedometer.BuildConfig
 import app.pedometer.PedometerApp
 import app.pedometer.core.ChartRange
 import app.pedometer.core.StepChart
@@ -156,6 +157,8 @@ class AppUiTest {
             // The tabs stay visible on the Settings screen, and it has no back arrow.
             compose.onNodeWithText("Today").assertIsDisplayed()
             assertEquals(0, compose.onAllNodesWithContentDescription("Back").fetchSemanticsNodes().size)
+            // The installed version is shown at the bottom, so a test build can be told apart.
+            compose.onNodeWithText("Version ${BuildConfig.VERSION_NAME}").assertExists()
 
             // A fresh install starts with the step count off, so the catch-up note is shown;
             // switching it on hides the note and saves the choice.

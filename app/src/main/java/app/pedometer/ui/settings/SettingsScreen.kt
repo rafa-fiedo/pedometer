@@ -30,6 +30,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import app.pedometer.BuildConfig
 import app.pedometer.R
 import app.pedometer.core.BodySize
 import app.pedometer.ui.onboarding.needsNotificationPermission
@@ -129,6 +130,13 @@ fun SettingsScreen(
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
             )
         }
+
+        Text(
+            text = stringResource(R.string.settings_version, BuildConfig.VERSION_NAME),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 24.dp),
+        )
     }
 
     if (editingGoal) {
