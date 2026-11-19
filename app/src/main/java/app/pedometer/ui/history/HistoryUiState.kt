@@ -20,7 +20,7 @@ fun historyMonths(
     locale: Locale,
 ): List<HistoryMonth> =
     StepStats.history(days, today, goal)
-        .groupBy { it.date.year to it.date.monthNumber }
+        .groupBy { it.date.year to it.date.month }
         .map { (_, monthDays) ->
             HistoryMonth(
                 title = formatMonthTitle(monthDays.first().date, locale),

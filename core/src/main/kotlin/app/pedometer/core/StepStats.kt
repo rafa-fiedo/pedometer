@@ -32,7 +32,7 @@ object StepStats {
         val past = days.filter { it.date <= today }
         val daysIntoWeek = (today.dayOfWeek.isoDayNumber - firstDayOfWeek.isoDayNumber + 7) % 7
         val weekStart = today.minus(daysIntoWeek, DateTimeUnit.DAY)
-        val thisMonth = past.filter { it.date.year == today.year && it.date.monthNumber == today.monthNumber }
+        val thisMonth = past.filter { it.date.year == today.year && it.date.month == today.month }
         val thisYear = past.filter { it.date.year == today.year }
         return StepSummary(
             today = past.filter { it.date == today }.sumOf { it.steps },

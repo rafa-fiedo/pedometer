@@ -39,7 +39,6 @@ import app.pedometer.R
 import app.pedometer.currentLocalDate
 import app.pedometer.ui.firstDayOfWeek
 import kotlinx.coroutines.flow.first
-import java.util.Locale
 import kotlin.math.roundToInt
 
 /** The circle's diameter: about the size of an app icon. */
@@ -74,7 +73,8 @@ class RoundStepsWidget : GlanceAppWidget() {
             val days by repository.days.collectAsState(initialDays)
             val goal by repository.goal.collectAsState(initialGoal)
             val weekStart by repository.weekStart.collectAsState(initialWeekStart)
-            val locale = Locale.getDefault()
+            // From the configuration rather than Locale.getDefault(), which composition cannot observe.
+            val locale = LocalContext.current.resources.configuration.locales[0]
             val state = widgetState(days, goal, currentLocalDate(), weekStart.resolve(firstDayOfWeek(locale)), locale)
             GlanceTheme {
                 val density = LocalContext.current.resources.displayMetrics.density

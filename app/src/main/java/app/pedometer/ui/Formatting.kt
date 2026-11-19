@@ -2,7 +2,9 @@ package app.pedometer.ui
 
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.toJavaDayOfWeek
 import kotlinx.datetime.toJavaLocalDate
+import kotlinx.datetime.toKotlinDayOfWeek
 import java.text.NumberFormat
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
@@ -34,10 +36,10 @@ fun formatRecordDate(date: LocalDate, locale: Locale): String = format(date, "EE
 
 /** The day's full name, starting with a capital: "Monday". */
 fun dayName(day: DayOfWeek, locale: Locale): String =
-    day.getDisplayName(TextStyle.FULL, locale).replaceFirstChar { it.titlecase(locale) }
+    day.toJavaDayOfWeek().getDisplayName(TextStyle.FULL, locale).replaceFirstChar { it.titlecase(locale) }
 
 /** The day weeks start on in [locale]: Monday in most of Europe, Sunday in the US. */
-fun firstDayOfWeek(locale: Locale): DayOfWeek = WeekFields.of(locale).firstDayOfWeek
+fun firstDayOfWeek(locale: Locale): DayOfWeek = WeekFields.of(locale).firstDayOfWeek.toKotlinDayOfWeek()
 
 private fun format(date: LocalDate, pattern: String, locale: Locale): String =
     DateTimeFormatter.ofPattern(pattern, locale).format(date.toJavaLocalDate())
