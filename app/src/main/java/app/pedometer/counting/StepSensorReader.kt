@@ -5,12 +5,16 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.SystemClock
 import android.util.Log
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.conflate
 import java.util.concurrent.CopyOnWriteArraySet
+
+/** One reading of the cumulative step sensor, and when its last step was taken. */
+data class StepReading(val value: Long, val lastStepMillis: Long)
 
 /** The one place that talks to the phone's cumulative step sensor. */
 class StepSensorReader(context: Context) {
@@ -26,10 +30,15 @@ class StepSensorReader(context: Context) {
      * and released when collection ends. Only the newest value is kept, because each reading
      * supersedes the last. Emits nothing on a phone without the sensor.
      */
-    fun readings(): Flow<Long> = callbackFlow {
+    fun readings(): Flow<StepReading> = callbackFlow {
         val listener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent) {
-                trySend(event.values[0].toLong())
+                val takenAt = lastStepTimeMillis(
+                    eventNanos = event.timestamp,
+                    nowElapsedNanos = SystemClock.elapsedRealtimeNanos(),
+                    nowMillis = System.currentTimeMillis(),
+                )
+                trySend(StepReading(value = event.values[0].toLong(), lastStepMillis = takenAt))
             }
 
             override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit

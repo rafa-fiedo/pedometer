@@ -29,6 +29,9 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.SensorEventBuilder
 import org.robolectric.shadows.ShadowSensor
+import org.robolectric.shadows.ShadowSystemClock
+import android.os.SystemClock
+import java.time.Duration
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -45,6 +48,13 @@ class StepRecorderTest {
     private lateinit var recorder: StepRecorder
     private val recorderScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
     private var recordedCalls = 0
+
+    // A reading the sensor is holding back until it is flushed, as Samsung phones do.
+    private var heldBack: Long? = null
+    private var flushes = 0
+
+    // Readings whose last step was before this time belong to the day before.
+    private var midnightMillis = Long.MIN_VALUE
 
     private fun d(iso: String) = LocalDate.parse(iso)
 
@@ -64,8 +74,15 @@ class StepRecorderTest {
             repository = repo,
             scope = recorderScope,
             bootCount = { 1 },
-            today = { d("2026-11-12") },
+            dateOf = { millis -> if (millis < midnightMillis) d("2026-11-11") else d("2026-11-12") },
             onRecorded = { recordedCalls++ },
+            requestFlush = {
+                flushes++
+                heldBack?.let {
+                    heldBack = null
+                    send(it)
+                }
+            },
         )
     }
 
@@ -75,14 +92,20 @@ class StepRecorderTest {
         db.close()
     }
 
-    /** Sends one sensor reading and waits until the recorder has written it. */
-    private suspend fun emit(value: Long) = coroutineScope {
-        val written = async(start = CoroutineStart.UNDISPATCHED) { recorder.recorded.first() }
+    /** Delivers one sensor reading whose last step was [stepAgo] ago. */
+    private fun send(value: Long, stepAgo: Duration = Duration.ZERO) {
         val event = SensorEventBuilder.newBuilder()
             .setSensor(sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)!!)
             .setValues(floatArrayOf(value.toFloat()))
+            .setTimestamp(SystemClock.elapsedRealtimeNanos() - stepAgo.toNanos())
             .build()
         shadowOf(sensorManager).sendSensorEventToListeners(event)
+    }
+
+    /** Sends one sensor reading and waits until the recorder has written it. */
+    private suspend fun emit(value: Long, stepAgo: Duration = Duration.ZERO) = coroutineScope {
+        val written = async(start = CoroutineStart.UNDISPATCHED) { recorder.recorded.first() }
+        send(value, stepAgo)
         written.await()
     }
 
@@ -150,6 +173,36 @@ class StepRecorderTest {
         emit(100)
         emit(130)
         assertEquals(2, recordedCalls)
+        live.cancel()
+    }
+
+    @Test
+    fun aReadingHeldBackPastMidnightCountsOnTheDayItsStepsWereWalked() = runBlocking {
+        // The phone has been on for a while, so timestamps hours in the past are valid.
+        ShadowSystemClock.advanceBy(Duration.ofHours(12))
+        midnightMillis = System.currentTimeMillis() - Duration.ofHours(2).toMillis()
+        val live = recorderScope.launch { recorder.recorded.collect {} }
+        emit(100, stepAgo = Duration.ofHours(5))
+        // 700 evening steps, delivered only after midnight.
+        emit(800, stepAgo = Duration.ofHours(3))
+        emit(850)
+
+        assertEquals(700, steps("2026-11-11"))
+        assertEquals(50, steps("2026-11-12"))
+        live.cancel()
+    }
+
+    @Test
+    fun recordOnceFlushesStepsTheSensorIsHoldingBack() = runBlocking {
+        // The service already listens, so registering again brings no fresh reading: only a
+        // flush makes the sensor hand over what it is holding.
+        val live = recorderScope.launch { recorder.recorded.collect {} }
+        emit(100)
+        heldBack = 130
+
+        assertTrue(recorder.recordOnce(timeoutMs = 2_000))
+        assertEquals(30, steps("2026-11-12"))
+        assertEquals(1, flushes)
         live.cancel()
     }
 }
